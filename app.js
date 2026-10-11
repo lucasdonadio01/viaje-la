@@ -520,7 +520,7 @@
     });
     if (!(d.actividades || []).length) {
       const R = resumen();
-      const est = R.libres.includes(diaSel) ? `<span class="libre-est">Si salen como un día promedio en LA: ≈ ${usd(R.porLibre)} de Uber (${usdPP(R.porLibre / personas)} c/u).</span>` : "";
+      const est = R.libres.includes(diaSel) ? `<span class="libre-est">${R.manual ? "Estimado por día libre" : `Día libre típico (2 lugares, ${R.ubersLibre} Ubers)`}: ≈ ${usd(R.porLibre)} de Uber (${usdPP(R.porLibre / personas)} c/u).</span>` : "";
       h += `<div class="libre"><b>${d.titulo === "Libre" ? "Día libre" : "Sin actividades"}</b>Agregá paseos, comidas o compras y se calcula a qué hora salir y cuánto sale el Uber.${est}</div>`;
     }
     h += `<button class="agregar" data-agregar="fin">${IC.mas}Agregar parada o actividad</button>`;
@@ -540,8 +540,12 @@
     const esLax = (l) => l && l.key === "lax";
     const viajes = planes.flatMap((p) => p.tramos).filter((t) => t.modo === "uber" && t.m <= 40000 && !t.provisorio && !esLax(t.desde) && !esLax(t.hacia));
     const promViaje = viajes.length ? suma(viajes.map((t) => t.costo)) / viajes.length : 0;
+    const T = S.tarifa;
+    const viajeLibre = Math.max(+T.minima || 0, (+T.base || 0) + (+T.porMilla || 0) * (+A.viajeLibreMillas || 6) + (+T.porMinuto || 0) * (+A.viajeLibreMinutos || 22)) * (1 + (+A.margenDinamica || 0) / 100) * (1 + (+A.propina || 0) / 100);
+    const ubersLibre = A.ubersDiaLibre == null || A.ubersDiaLibre === "" ? 3 : +A.ubersDiaLibre;
+    const tipico = Math.round(viajeLibre * ubersLibre);
     const manual = A.gastoDiaLibre != null && A.gastoDiaLibre !== "" && !isNaN(+A.gastoDiaLibre);
-    const porLibre = manual ? +A.gastoDiaLibre : Math.round(promCerca);
+    const porLibre = manual ? +A.gastoDiaLibre : tipico;
     const libres = S.dias.map((_, i) => i).filter((i) => {
       const d = S.dias[i];
       return !d.agenda && !d.inicio && !d.fin && !(d.actividades || []).length;
@@ -549,7 +553,7 @@
     const calculado = suma(planes.map((p) => p.total));
     const estLibres = libres.length * porLibre;
     return {
-      personas, promAgenda, promCerca, promViaje, porLibre, manual, libres, calculado, estLibres,
+      personas, promAgenda, promCerca, promViaje, porLibre, manual, libres, calculado, estLibres, viajeLibre, ubersLibre, tipico,
       total: calculado + estLibres,
       ubers: suma(planes.map((p) => p.ubers)),
       nAgenda: agenda.length,
@@ -974,14 +978,17 @@
       </div>
       <p class="nota-chica">Calculado viaje por viaje: ${usd(R.calculado)} (${usdPP(R.calculado / personas)} c/u)${R.libres.length ? ` + días libres: ${R.libres.length} × ${usd(R.porLibre)} = ${usd(R.estLibres)}` : ""}. Sin colchón, lo calculado sería ${usd(sin)}.${tc ? ` Total en pesos: ${fArs.format(tot * tc)}.` : ""}${+A.propina ? ` Incluye ${A.propina}% de propina.` : " Sin propina."}</p>
       <section class="libres-caja">
-        <h3>${IC.ahorro}Promedios para los días libres</h3>
+        <h3>${IC.ahorro}Días libres</h3>
         <div class="stats">
-          <div><small>Por día de agenda</small><b>${usd(R.promAgenda)}</b><em>${usdPP(R.promAgenda / personas)} c/u · ${R.nAgenda} días</em></div>
-          <div><small>Por día en LA (sin Disney)</small><b>${usd(R.promCerca)}</b><em>${usdPP(R.promCerca / personas)} c/u · ${R.nCerca} días</em></div>
-          <div><small>Por viaje dentro de LA</small><b>${usd(R.promViaje)}</b><em>${usdPP(R.promViaje / personas)} c/u</em></div>
+          <div><small>Día libre típico</small><b>${usd(R.tipico)}</b><em>${usdPP(R.tipico / personas)} c/u · ${R.ubersLibre} Ubers</em></div>
+          <div><small>Por viaje (≈ 10 km)</small><b>${usd(R.viajeLibre)}</b><em>${usdPP(R.viajeLibre / personas)} c/u</em></div>
+          <div><small>Día de agenda (referencia)</small><b>${usd(R.promAgenda)}</b><em>${usdPP(R.promAgenda / personas)} c/u · más viajes y más largos</em></div>
         </div>
-        <label class="ajuste"><small>Gasto por día libre (vacío = promedio de un día en LA)</small><input type="number" min="0" step="5" value="${R.manual ? +A.gastoDiaLibre : ""}" placeholder="${Math.round(R.promCerca)}" data-aj="ajustes.gastoDiaLibre" data-vacio="null"></label>
-        <p class="nota-chica">Un día libre con 3 Ubers dentro de LA serían ≈ ${usd(R.promViaje * 3)} (${usdPP((R.promViaje * 3) / personas)} c/u); con 4, ≈ ${usd(R.promViaje * 4)}. Si cargan actividades en un día libre, ese día se calcula viaje por viaje.</p>
+        <div class="ajustes">
+          <label class="ajuste"><small>Ubers por día libre</small><input type="number" min="0" max="10" step="1" value="${R.ubersLibre}" data-aj="ajustes.ubersDiaLibre"></label>
+          <label class="ajuste"><small>O un monto fijo por día (US$)</small><input type="number" min="0" step="5" value="${R.manual ? +A.gastoDiaLibre : ""}" placeholder="${R.tipico}" data-aj="ajustes.gastoDiaLibre" data-vacio="null"></label>
+        </div>
+        <p class="nota-chica">Típico = ir a 2 lugares y volver: 3 Ubers de unos 10 km y 22 min, con el ${+A.margenDinamica || 0}% de colchón. Ejemplos desde la casa: The Grove + LACMA ≈ US$ 100 (US$ 70 si caminan entre los dos), Griffith + cartel de Hollywood ≈ US$ 145, Santa Monica + Venice ≈ US$ 210, Malibu + Santa Monica ≈ US$ 310. Si cargan las actividades de un día libre, ese día se calcula viaje por viaje.</p>
       </section>
       <div class="ajustes">
         <label class="ajuste ancho"><small>Colchón por tarifa dinámica: <span class="rango-val">${+A.margenDinamica || 0}%</span></small><input type="range" min="0" max="60" step="5" value="${+A.margenDinamica || 0}" data-aj="ajustes.margenDinamica"></label>
@@ -1101,7 +1108,7 @@
     const R = resumen();
     R.libres.forEach((i) => {
       const d = S.dias[i], f = fecha(d.fecha);
-      filas.push([`${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`, `${SEM[f.getDay()]} · ${etiquetaDia(d)}`, "", "", "Día libre (estimado)", "", "", "", "", "", "", "", "", "", n(R.porLibre), "", n(R.porLibre / personas), "Promedio de un día en LA"]);
+      filas.push([`${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`, `${SEM[f.getDay()]} · ${etiquetaDia(d)}`, "", "", "Día libre (estimado)", "", "", "", "", "", "", "", "", "", n(R.porLibre), "", n(R.porLibre / personas), R.manual ? "Monto fijo por día libre" : `Día libre típico (${R.ubersLibre} Ubers)`]);
     });
     filas.push([]);
     filas.push(["Total Uber", "", "", "", "", "", "", "", "", "", "", "", "", "", n(R.total), "", n(R.total / personas), ""]);
@@ -1144,7 +1151,7 @@
     else if (tipo === "resumen") {
       const R = resumen(), personas = R.personas;
       const partes = S.dias.map((_, i) => i).filter((i) => (S.dias[i].actividades || []).length).map(textoDia);
-      if (R.libres.length) partes.push(`Días libres: ${R.libres.length} × ~${usd(R.porLibre)} = ~${usd(R.estLibres)} (promedio de un día en LA)`);
+      if (R.libres.length) partes.push(`Días libres: ${R.libres.length} × ~${usd(R.porLibre)} = ~${usd(R.estLibres)} (día libre típico)`);
       partes.push(`*Total Uber del viaje: ${usd(R.total)} · ${usdPP(R.total / personas)} c/u*`);
       compartir(partes.join("\n\n"));
     } else if (tipo === "datos") {

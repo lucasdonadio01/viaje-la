@@ -41,6 +41,6 @@ Para que las chicas puedan editar: **Settings → Collaborators → Add people**
 - **Horarios:** *Llegan* es 20 minutos antes de la actividad (5 si van a pie). *Salen* resta el viaje. *Pedir Uber* resta 7 minutos más de espera del auto. Todo se puede cambiar en **Ajustes**.
 - **Precio UberXL:** US$ 9 + US$ 2,10 por milla + US$ 0,90 por minuto (mínimo US$ 24), más US$ 5 en LAX y US$ 3 al salir de Universal. Está calibrado con los precios promedio que publica Uber para rutas de LA (octubre 2026). Encima se suma un 20 % de colchón por tarifa dinámica, ajustable. No incluye propina.
 - Los tramos a un lugar **a confirmar** se calculan como un viaje típico de 13 km hasta que se cargue la dirección.
-- **Días libres:** sin actividades cargadas, cada día libre se estima con el promedio de un día de agenda en LA (sin los de Disney). En **Presupuesto → Promedios para los días libres** se puede poner otro monto por día.
+- **Días libres:** sin actividades cargadas, cada día libre se estima como un día típico de 2 lugares: 3 Ubers de unos 10 km (≈ US$ 50 cada uno con el colchón). En **Presupuesto → Días libres** se cambia la cantidad de Ubers o se pone un monto fijo.
 
 `viajes-uber-la.xlsx` tiene los mismos viajes en Excel: se puede cambiar el colchón y cargar precios reales, y los totales se recalculan.

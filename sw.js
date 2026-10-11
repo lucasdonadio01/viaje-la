@@ -1,4 +1,4 @@
-const V = "la26-v2";
+const V = "la26-v3";
 const TILES = "la26-tiles";
 const APP = ["./", "index.html", "estilos.css", "app.js", "datos.js", "rutas.js", "manifest.webmanifest", "icono.svg"];
 const CDN = [

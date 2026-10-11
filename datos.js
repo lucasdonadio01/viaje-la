@@ -11,7 +11,10 @@ window.VIAJE = {
     "margenDinamica": 20,
     "propina": 0,
     "tipoCambio": 0,
-    "gastoDiaLibre": null
+    "gastoDiaLibre": null,
+    "ubersDiaLibre": 3,
+    "viajeLibreMillas": 6,
+    "viajeLibreMinutos": 22
   },
   "tarifa": {
     "base": 9,
