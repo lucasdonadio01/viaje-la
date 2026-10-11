@@ -1,0 +1,16 @@
+{
+  "name": "LA 26 · Ubers",
+  "short_name": "LA 26",
+  "description": "Horarios, mapa y presupuesto de Uber del viaje a Los Ángeles.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icono-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

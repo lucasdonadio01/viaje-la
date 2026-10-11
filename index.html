@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>LA 26 · Ubers</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icono.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&icon_names=add,alarm,attach_money,calendar_month,check_circle,close,directions_bus,directions_car,directions_walk,download,edit,fit_screen,hail,home,info,location_on,map,payments,route,savings,schedule,search,share,tune,warning&display=block">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<div class="app" id="app" data-vista="agenda">
+  <aside class="panel">
+    <header class="cabecera">
+      <div class="marca">
+        <span class="logo">LA</span>
+        <div class="marca-txt">
+          <strong id="titulo">LA 26</strong>
+          <small id="subtitulo"></small>
+        </div>
+      </div>
+      <span class="pill-estado" id="estado"></span>
+      <button class="icono-btn" id="btn-info" aria-label="Cómo se usa">
+        <span class="ms" aria-hidden="true">info</span>
+      </button>
+    </header>
+
+    <button class="buscador" id="buscador">
+      <span>Agregar una parada…</span>
+      <span class="ms" aria-hidden="true">search</span>
+    </button>
+
+    <nav class="dias" id="dias" aria-label="Días del viaje"></nav>
+
+    <div class="filtros">
+      <div class="filtro">
+        <small>Vehículo:</small>
+        <button class="chip" id="chip-vehiculo">UberXL · 5</button>
+      </div>
+      <div class="filtro">
+        <small>Colchón tarifa:</small>
+        <button class="chip" id="chip-margen">+20%</button>
+      </div>
+      <div class="filtro filtro-fin">
+        <small>&nbsp;</small>
+        <button class="chip" id="chip-ajustes">
+          <span class="ms" aria-hidden="true">tune</span>
+          Ajustes
+        </button>
+      </div>
+    </div>
+
+    <div class="aviso-nueva" id="aviso-nueva" hidden>
+      <p>Hay una versión nueva del itinerario publicada. ¿La usás? Se pierden los cambios que hiciste en este dispositivo.</p>
+      <div class="fila-btns">
+        <button class="btn" id="usar-nueva">Usar la nueva</button>
+        <button class="btn btn-sec" id="mantener-mia">Mantener la mía</button>
+      </div>
+    </div>
+
+    <div class="lista" id="lista"></div>
+
+    <footer class="pie-presu" id="pie-presu">
+      <div class="presu-item">
+        <small>Este día</small>
+        <strong id="presu-dia">US$ 0</strong>
+        <em id="presu-dia-pp"></em>
+      </div>
+      <div class="presu-item">
+        <small>Todo el viaje</small>
+        <strong id="presu-total">US$ 0</strong>
+        <em id="presu-total-pp"></em>
+      </div>
+      <button class="btn" id="btn-presu">Presupuesto</button>
+    </footer>
+  </aside>
+
+  <main class="mapa-wrap">
+    <div id="mapa" class="mapa"></div>
+    <div class="mapa-sin" id="mapa-sin" hidden>El mapa necesita conexión la primera vez. La agenda y los precios funcionan igual.</div>
+    <div class="mapa-acciones">
+      <button class="chip chip-mapa" id="btn-encuadrar"><span class="ms" aria-hidden="true">fit_screen</span>Ver el día entero</button>
+    </div>
+  </main>
+
+  <nav class="tabbar" aria-label="Secciones">
+    <button data-vista="agenda" class="activo">
+      <span class="ms" aria-hidden="true">calendar_month</span>
+      Agenda
+    </button>
+    <button data-vista="mapa">
+      <span class="ms" aria-hidden="true">map</span>
+      Mapa
+    </button>
+    <button data-vista="presu">
+      <span class="ms" aria-hidden="true">payments</span>
+      Presupuesto
+    </button>
+  </nav>
+</div>
+
+<dialog class="modal" id="modal-parada">
+  <form method="dialog" class="modal-cuerpo" id="form-parada">
+    <header class="modal-cab">
+      <h2 id="parada-titulo">Agregar parada</h2>
+      <button type="button" class="icono-btn" data-cerrar aria-label="Cerrar">
+        <span class="ms" aria-hidden="true">close</span>
+      </button>
+    </header>
+
+    <label class="campo">
+      <span>Nombre</span>
+      <input id="p-nombre" type="text" placeholder="Ej: Almuerzo en In-N-Out" autocomplete="off">
+    </label>
+
+    <div class="campo">
+      <span>Lugar</span>
+      <div class="lugar-elegido" id="p-lugar-elegido"></div>
+      <input id="p-buscar" type="search" placeholder="Buscar dirección o lugar en LA…" autocomplete="off">
+      <div class="resultados" id="p-resultados"></div>
+      <div class="lugares-rapidos" id="p-rapidos"></div>
+      <button type="button" class="btn btn-sec btn-chico" id="p-en-mapa">Tocar el lugar en el mapa</button>
+    </div>
+
+    <div class="campo">
+      <span>Horario</span>
+      <div class="segmentos" id="p-tipo-hora">
+        <button type="button" data-v="fija">Hora fija</button>
+        <button type="button" data-v="corrido">De corrido</button>
+      </div>
+      <div class="fila-campos">
+        <label class="campo-mini" id="p-hora-wrap"><small>Empieza</small><input id="p-hora" type="time"></label>
+        <label class="campo-mini" id="p-fin-wrap"><small>Termina</small><input id="p-fin" type="time"></label>
+        <label class="campo-mini" id="p-dur-wrap"><small>Se quedan (min)</small><input id="p-dur" type="number" min="5" step="5" inputmode="numeric"></label>
+      </div>
+      <small class="ayuda" id="p-ayuda-hora"></small>
+    </div>
+
+    <div class="campo">
+      <span>Cómo llegan</span>
+      <div class="segmentos" id="p-modo">
+        <button type="button" data-v="uber">Uber</button>
+        <button type="button" data-v="pie">A pie</button>
+        <button type="button" data-v="grupo">Con el grupo</button>
+      </div>
+    </div>
+
+    <label class="campo">
+      <span>Nota</span>
+      <textarea id="p-nota" rows="2" placeholder="Opcional"></textarea>
+    </label>
+
+    <footer class="modal-pie">
+      <button type="button" class="btn btn-peligro" id="p-borrar">Borrar</button>
+      <span class="espacio"></span>
+      <button type="button" class="btn btn-sec" data-cerrar>Cancelar</button>
+      <button type="submit" class="btn" id="p-guardar">Guardar</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="modal" id="modal-presu">
+  <div class="modal-cuerpo">
+    <header class="modal-cab">
+      <h2>Presupuesto de Uber</h2>
+      <button type="button" class="icono-btn" data-cerrar aria-label="Cerrar">
+        <span class="ms" aria-hidden="true">close</span>
+      </button>
+    </header>
+    <div id="presu-contenido"></div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="modal-ajustes">
+  <div class="modal-cuerpo">
+    <header class="modal-cab">
+      <h2>Ajustes</h2>
+      <button type="button" class="icono-btn" data-cerrar aria-label="Cerrar">
+        <span class="ms" aria-hidden="true">close</span>
+      </button>
+    </header>
+    <div id="ajustes-contenido"></div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="modal-info">
+  <div class="modal-cuerpo">
+    <header class="modal-cab">
+      <h2>Cómo se usa</h2>
+      <button type="button" class="icono-btn" data-cerrar aria-label="Cerrar">
+        <span class="ms" aria-hidden="true">close</span>
+      </button>
+    </header>
+    <div class="info">
+      <p><b>Pedir</b> es la hora de abrir la app de Uber. <b>Salen</b> es cuando el auto ya los levantó. <b>Llegan</b> es la llegada con el colchón de minutos antes de la actividad (por defecto, 20).</p>
+      <p>Los tiempos de manejo salen de rutas reales con un factor de tráfico de LA según la hora y el día. Los precios son de <b>UberXL</b> (entran los 5), calibrados con los promedios que publica Uber para LA, más un colchón por tarifa dinámica que podés cambiar.</p>
+      <p>Cuando vean el precio real en la app, cárguenlo en <b>Precio real</b> y el presupuesto se actualiza.</p>
+      <p>Para sumar algo, tocá <b>+ Parada</b> en un viaje, o el buscador de arriba. <b>De corrido</b> quiere decir que van directo desde lo anterior, sin hora fija.</p>
+      <p>Los cambios se guardan en este dispositivo. Para que los vean todos, usá <b>Ajustes → Descargar datos.js</b> y subí ese archivo al repositorio de GitHub.</p>
+      <div class="offline-caja">
+        <b>Usar sin internet</b>
+        <p>La agenda, los horarios y los precios ya quedan guardados. Para tener también el mapa, descargalo una vez con wifi.</p>
+        <button class="btn" id="btn-offline">Descargar mapas (≈ 5 MB)</button>
+        <div class="barra" id="barra-offline" hidden><i></i></div>
+        <small id="estado-offline"></small>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="datos.js"></script>
+<script src="rutas.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
