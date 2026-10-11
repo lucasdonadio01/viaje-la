@@ -1,5 +1,5 @@
 window.VIAJE = {
-  "version": 1,
+  "version": 2,
   "titulo": "LA 26",
   "subtitulo": "Agenda LBT FACO · Grupo 1",
   "personas": 5,
@@ -20,7 +20,8 @@ window.VIAJE = {
     "base": 9,
     "porMilla": 2.1,
     "porMinuto": 0.9,
-    "minima": 24
+    "minima": 24,
+    "factorXXL": 1.15
   },
   "lugares": {
     "casa": { "nombre": "Casa · Airbnb", "direccion": "5925 Barton Ave, Los Angeles, CA 90038", "lat": 34.088293, "lng": -118.323275, "sigla": "casa", "color": "#ffffff" },
@@ -40,7 +41,7 @@ window.VIAJE = {
   },
   "dias": [
     {
-      "fecha": "2026-10-23", "titulo": "Llegada", "inicio": "lax", "fin": "casa",
+      "fecha": "2026-10-23", "titulo": "Llegada", "inicio": "lax", "fin": "casa", "regresoVehiculo": "UberXXL",
       "actividades": [
         { "id": "d0a1", "nombre": "Salida del aeropuerto", "hora": "15:00", "finHora": "15:00", "lugar": "lax", "aConfirmar": true, "nota": "Poné la hora en que salen de migraciones con las valijas." }
       ]
@@ -102,7 +103,7 @@ window.VIAJE = {
     {
       "fecha": "2026-11-05", "titulo": "Vuelta", "fin": "lax",
       "actividades": [
-        { "id": "d9a1", "nombre": "Llegar a LAX (3 h antes del vuelo)", "hora": "12:00", "finHora": "12:00", "lugar": "lax", "aConfirmar": true, "nota": "Poné la hora del vuelo menos 3 horas." }
+        { "id": "d9a1", "nombre": "Llegar a LAX (3 h antes del vuelo)", "vehiculo": "UberXXL", "hora": "12:00", "finHora": "12:00", "lugar": "lax", "aConfirmar": true, "nota": "Poné la hora del vuelo menos 3 horas." }
       ]
     }
   ]

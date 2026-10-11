@@ -18,6 +18,7 @@ Para que las chicas puedan editar: **Settings → Collaborators → Add people**
 - Abrir el link en Chrome (Android) o Safari (iPhone) y elegir **Agregar a pantalla de inicio**.
 - Con wifi, entrar a **ⓘ → Descargar mapas** (unos 5 MB): después la agenda, los horarios, los precios y el mapa funcionan sin internet.
 - **Abrir Uber** abre la app con el origen y el destino ya cargados. **Maps** abre la ruta en Google Maps.
+- En **Mapa**, las tarjetas de abajo se deslizan: cada una muestra la actividad, a qué hora pedir el Uber y cuánto sale, y la marca en el mapa.
 
 ## Cambiar algo del itinerario
 
@@ -33,6 +34,7 @@ Para que las chicas puedan editar: **Settings → Collaborators → Add people**
 - Sin `hora` y con `"duracion": 45` es una parada **de corrido** (van directo desde lo anterior).
 - `"llegada": "pie"` o `"llegada": "grupo"` si no van en Uber.
 - `"precioReal": 48` reemplaza la estimación con el precio que mostró la app.
+- `"vehiculo": "UberXXL"` en una actividad (o `"regresoVehiculo"` en el día) cambia el tipo de Uber de ese viaje.
 - Después de editar, subir en 1 el número de `"version"` (arriba de todo) para que los celulares avisen que hay una versión nueva.
 
 ## Cómo se calcula
@@ -40,6 +42,7 @@ Para que las chicas puedan editar: **Settings → Collaborators → Add people**
 - **Recorridos:** rutas reales de OpenStreetMap, con un factor de tráfico de LA según la hora y el día (hora pico de semana ×1,6–1,7).
 - **Horarios:** *Llegan* es 20 minutos antes de la actividad (5 si van a pie). *Salen* resta el viaje. *Pedir Uber* resta 7 minutos más de espera del auto. Todo se puede cambiar en **Ajustes**.
 - **Precio UberXL:** US$ 9 + US$ 2,10 por milla + US$ 0,90 por minuto (mínimo US$ 24), más US$ 5 en LAX y US$ 3 al salir de Universal. Está calibrado con los precios promedio que publica Uber para rutas de LA (octubre 2026). Encima se suma un 20 % de colchón por tarifa dinámica, ajustable. No incluye propina.
+- **Aeropuerto:** la llegada (23/10) y la ida a LAX (5/11) van en **UberXXL**, que asegura lugar para las valijas: se calcula 15 % más caro que el XL, según los precios que publica Uber para rutas desde LAX.
 - Los tramos a un lugar **a confirmar** se calculan como un viaje típico de 13 km hasta que se cargue la dirección.
 - **Días libres:** sin actividades cargadas, cada día libre se estima como un día típico de 2 lugares: 3 Ubers de unos 10 km (≈ US$ 50 cada uno con el colchón). En **Presupuesto → Días libres** se cambia la cantidad de Ubers o se pone un monto fijo.
 

@@ -591,6 +591,7 @@ button { cursor: pointer; }
 .pop-btn:hover { background: #2a2a2a; }
 
 .tabbar { display: none; }
+.carrusel { display: none; }
 
 .modal {
   width: min(560px, calc(100vw - 24px));
@@ -803,6 +804,50 @@ button { cursor: pointer; }
   .app[data-vista="mapa"] .panel { min-height: 0; padding-bottom: 0; }
   .app[data-vista="mapa"] .dias { position: fixed; left: 0; right: 0; top: var(--cab-h, 62px); }
   .mapa-acciones { top: 12px; right: 12px; }
+
+  .carrusel {
+    display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    z-index: 700;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 4px 16px;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 16px;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .carrusel::-webkit-scrollbar { display: none; }
+  .car {
+    flex: 0 0 84%;
+    max-width: 360px;
+    scroll-snap-align: center;
+    background: rgba(22, 22, 22, 0.97);
+    border: 1px solid var(--line-2);
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  }
+  .car.sel { border-color: rgba(123, 224, 173, 0.85); }
+  .car-cab { display: flex; gap: 10px; align-items: center; min-width: 0; }
+  .car-cab .sig { width: 38px; height: 38px; font-size: 12px; flex: none; }
+  .car-cab > div { min-width: 0; }
+  .car-cab b { display: block; font-size: 15px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .car-cab small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .car-cab small em { font-style: normal; color: var(--mint); font-weight: 600; }
+  .car-viaje { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--card-2); font-size: 13px; }
+  .car-viaje span:not(.ms) { flex: 1; min-width: 0; }
+  .car-viaje b { color: var(--mint); }
+  .car-viaje strong { font-size: 15px; white-space: nowrap; }
+  .car-viaje .ms { font-size: 18px; color: var(--muted); }
+  .car-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .app[data-vista="mapa"] .leaflet-bottom { bottom: calc(var(--car-h, 150px) + 14px); }
 
   .tabbar {
     display: flex;

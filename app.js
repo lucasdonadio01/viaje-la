@@ -35,6 +35,8 @@
     compartir: ms("share"),
     bajar: ms("download"),
     alarma: ms("alarm"),
+    valija: ms("luggage"),
+    lista: ms("list"),
     ahorro: ms("savings"),
     cerrar: ms("close")
   };
@@ -42,6 +44,8 @@
   let S, baseVersion, hayGuardado = false, diaSel = 0, mapa = null, capa = null, lineas = {}, marcas = {}, selKey = null;
   let rutasExtra = {}, pendientes = new Set(), planes = [], eligiendo = false;
   let edit = null;
+  let carSel = null, carInfo = {}, timerCar = null;
+  const esMovil = () => window.innerWidth < 900;
 
   function cargar() {
     let g = null;
@@ -198,7 +202,7 @@
     return baseMin(r) * factor(f, hora) + 3;
   }
 
-  function tramo(f, a, b, modo, cuando, real) {
+  function tramo(f, a, b, modo, cuando, real, vehiculo) {
     const A = S.ajustes;
     const t = { tipo: "tramo", desde: a, hacia: b, modo };
     let r;
@@ -234,6 +238,8 @@
       if (a) rec += (+a.recargo || 0) + (+a.recargoSalida || 0);
       if (b) rec += +b.recargo || 0;
       t.estimado = Math.max(+T.minima || 0, (+T.base || 0) + (+T.porMilla || 0) * mi + (+T.porMinuto || 0) * t.min) + rec;
+      t.vehiculo = vehiculo || S.vehiculo || "UberXL";
+      if (vehiculo === "UberXXL") t.estimado *= +T.factorXXL || 1.15;
       const prop = 1 + (+A.propina || 0) / 100;
       t.real = real > 0 ? +real : null;
       t.costo = t.real ? t.real * prop : t.estimado * (1 + (+A.margenDinamica || 0) / 100) * prop;
@@ -261,7 +267,7 @@
       const fija = !!a.hora;
       const objetivo = fija ? aMin(a.hora) - colchonDe(modo) : null;
       const desde = prevEnd != null ? prevEnd : 600;
-      const t = tramo(d.fecha, prevLoc, loc, modo, fija ? { llegar: objetivo } : { salir: desde }, a.precioReal);
+      const t = tramo(d.fecha, prevLoc, loc, modo, fija ? { llegar: objetivo } : { salir: desde }, a.precioReal, a.vehiculo);
       t.key = `${di}-${n++}`;
       t.destino = i;
       if (fija) t.inicioAct = aMin(a.hora);
@@ -283,7 +289,7 @@
     if (acts.length) {
       const mismoFin = prevLoc && fin && distM(prevLoc, fin) < 150;
       if (!mismoFin && fin) {
-        const t = tramo(d.fecha, prevLoc, fin, d.regresoModo || "uber", { salir: prevEnd }, d.regresoPrecioReal);
+        const t = tramo(d.fecha, prevLoc, fin, d.regresoModo || "uber", { salir: prevEnd }, d.regresoPrecioReal, d.regresoVehiculo);
         t.key = `${di}-${n++}`;
         t.regreso = true;
         t.dia = di;
@@ -383,6 +389,9 @@
         out.push(`<div class="alerta verde">${IC.ok}<span>Tienen ${dur(Math.round(t.libre))} libres antes de ${t.modo === "uber" ? "pedir el Uber" : "salir"}. Ideal para una parada extra.</span></div>`);
       }
     }
+    if (t.modo === "uber" && t.vehiculo === "UberXXL") {
+      out.push(`<div class="alerta gris">${IC.valija}<span>En la app elegí <b>UberXXL</b>: tiene lugar asegurado para las valijas (el XL no).</span></div>`);
+    }
     if (t.modo === "uber" && t.pedir != null && ((t.pedir % 1440) + 1440) % 1440 < 390) {
       out.push(`<div class="alerta gris">${IC.alarma}<span>Muy temprano: conviene programarlo la noche anterior con Uber Reserve.</span></div>`);
     }
@@ -394,7 +403,7 @@
 
   function htmlTramo(t) {
     if (t.mismo) return `<div class="tramo t-mismo">Mismo lugar</div>`;
-    const nombreModo = { uber: S.vehiculo || "UberXL", pie: "A pie", grupo: "Con el grupo" }[t.modo];
+    const nombreModo = { uber: t.vehiculo || S.vehiculo || "UberXL", pie: "A pie", grupo: "Con el grupo" }[t.modo];
     const icono = { uber: IC.auto, pie: IC.pie, grupo: IC.grupo }[t.modo];
     const personas = +S.personas || 1;
     let precio = "";
@@ -647,7 +656,14 @@
       const chip = actN ? `${IC.reloj}${actN.fija ? "" : "≈"}${hhmm(actN.ini)}` : g.l.sigla === "casa" ? `${IC.casa}Casa` : esc(g.l.nombre);
       const m = L.marker([g.l.lat, g.l.lng], { icon: iconoMarca(g.l, chip, false), riseOnHover: true }).addTo(capa);
       const t = actN ? actN.llegaTramo : null;
-      m.bindPopup(() => popupHTML({ l: g.l, act: actN && actN.act, n: actN, t }), { maxWidth: 300, minWidth: 270, autoPanPadding: [40, 40] });
+      if (esMovil()) {
+        m.on("click", () => {
+          const k2 = actN ? "a" + actN.idx : carInfo.r && g.items.some((x) => x.rol === "fin") ? "r" : null;
+          if (k2) seleccionarCar(k2, true);
+        });
+      } else {
+        m.bindPopup(() => popupHTML({ l: g.l, act: actN && actN.act, n: actN, t }), { maxWidth: 300, minWidth: 270, autoPanPadding: [40, 40] });
+      }
       marcas[k] = { m, g };
       if (actN) g.items.filter((x) => x.tipo === "act").forEach((x) => (marcas["a" + x.idx] = { m, g, k }));
     });
@@ -662,7 +678,7 @@
     const b = L.featureGroup(capas).getBounds();
     if (!b.isValid()) return;
     const ancho = window.innerWidth >= 900;
-    mapa.fitBounds(b, { paddingTopLeft: [50, 70], paddingBottomRight: [50, ancho ? 50 : 40], maxZoom: 15, animate: false });
+    mapa.fitBounds(b, { paddingTopLeft: [50, 70], paddingBottomRight: [50, ancho ? 50 : ($("#carrusel").offsetHeight || 0) + 30], maxZoom: 15, animate: false });
   }
 
   function resaltar() {
@@ -712,6 +728,92 @@
     renderLista();
     renderPie();
     renderMapa(encuadrar);
+    renderCarrusel();
+  }
+
+  function renderCarrusel() {
+    const cont = $("#carrusel");
+    if (!cont) return;
+    const p = planes[diaSel], d = S.dias[diaSel];
+    carInfo = {};
+    const viaje = (t) => {
+      if (!t || t.oculto) return "";
+      if (t.mismo) return `<div class="car-viaje">${IC.pin}<span>Mismo lugar</span></div>`;
+      const pre = t.provisorio ? "≈ " : "";
+      if (t.modo === "uber") return `<div class="car-viaje">${IC.auto}<span>Pedir ${t.vehiculo === "UberXXL" ? "UberXXL" : "Uber"} <b>${hhmm(t.pedir)}</b> · llegan ${hhmm(t.llega)}</span><strong>${pre}${usd(t.costo)}</strong></div>`;
+      if (t.modo === "pie") return `<div class="car-viaje">${IC.pie}<span>Salir a pie <b>${hhmm(t.salir)}</b> · llegan ${hhmm(t.llega)}</span></div>`;
+      return `<div class="car-viaje">${IC.grupo}<span>Con el grupo · llegan ${hhmm(t.llega)}</span></div>`;
+    };
+    const uber = (t) => (t && t.modo === "uber" && !t.mismo && t.desde && t.hacia ? `<a class="mini-btn prim" href="${esc(linkUber(t.desde, t.hacia))}" target="_blank" rel="noopener">${IC.uber}Abrir Uber</a>` : "");
+    const tarjetas = [];
+    p.nodos.forEach((n) => {
+      if (n.tipo === "act") {
+        const k = "a" + n.idx, l = n.loc, t = n.llegaTramo;
+        carInfo[k] = { loc: l, tramo: t && !t.mismo && t.pts ? t.key : null };
+        const horario = `${n.fija ? "" : "≈ "}${hhmm(n.ini)}${n.fija && n.act.finHora && n.act.finHora !== n.act.hora ? " – " + hhmm(n.fin) : ""}`;
+        tarjetas.push(`<article class="car" data-car="${k}">
+          <div class="car-cab">${sigHTML(l)}<div><b>${esc(n.act.nombre)}</b><small><em>${horario}</em> · ${l ? esc(l.nombre) : "Lugar a confirmar"}</small></div></div>
+          ${viaje(t)}
+          <div class="car-btns">${uber(t)}<button class="mini-btn" data-car-agenda="${n.idx}">${IC.lista}Ver en la agenda</button></div>
+        </article>`);
+      } else if (n.tipo === "tramo" && n.regreso) {
+        const l = n.hacia;
+        carInfo.r = { loc: l, tramo: !n.mismo && n.pts ? n.key : null };
+        tarjetas.push(`<article class="car" data-car="r">
+          <div class="car-cab">${sigHTML(l)}<div><b>Vuelta a ${esc(l ? l.nombre : "casa")}</b><small><em>Llegan ≈ ${hhmm(n.llega)}</em></small></div></div>
+          ${viaje(n)}
+          <div class="car-btns">${uber(n)}</div>
+        </article>`);
+      }
+    });
+    if (!tarjetas.length) {
+      tarjetas.push(`<article class="car" data-car="libre">
+        <div class="car-cab">${sigHTML(lugarDe(d.inicio || "casa"))}<div><b>${d.titulo === "Libre" ? "Día libre" : esc(d.titulo || "Sin actividades")}</b><small>Agregá paradas y aparecen acá</small></div></div>
+        <div class="car-btns"><button class="mini-btn prim" data-car-parada>${IC.mas}Agregar parada</button></div>
+      </article>`);
+    }
+    cont.innerHTML = tarjetas.join("");
+    cont.scrollLeft = 0;
+    carSel = null;
+    medirCarrusel();
+  }
+
+  function medirCarrusel() {
+    const c = $("#carrusel");
+    if (c) document.documentElement.style.setProperty("--car-h", (c.offsetHeight || 0) + "px");
+  }
+
+  function marcarMarca(l) {
+    Object.values(marcas).forEach(({ m }) => {
+      const el = m.getElement && m.getElement();
+      const mk = el && el.querySelector(".mk");
+      if (mk) mk.classList.remove("sel");
+      m.setZIndexOffset(0);
+    });
+    if (!l) return;
+    const reg = marcas[l.key || `${(+l.lat).toFixed(5)},${(+l.lng).toFixed(5)}`];
+    if (!reg) return;
+    const el = reg.m.getElement && reg.m.getElement();
+    const mk = el && el.querySelector(".mk");
+    if (mk) mk.classList.add("sel");
+    reg.m.setZIndexOffset(1000);
+  }
+
+  function seleccionarCar(k, desplazar) {
+    carSel = k;
+    $$("#carrusel .car").forEach((c) => c.classList.toggle("sel", c.dataset.car === k));
+    if (desplazar) {
+      const el = $(`#carrusel [data-car="${k}"]`);
+      if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+    const info = carInfo[k];
+    if (!info || !mapa) return;
+    selKey = info.tramo;
+    resaltar();
+    marcarMarca(info.loc);
+    const opts = { paddingTopLeft: [36, 64], paddingBottomRight: [36, ($("#carrusel").offsetHeight || 0) + 24], maxZoom: 15 };
+    if (selKey && lineas[selKey]) mapa.fitBounds(lineas[selKey].pl.getBounds(), opts);
+    else if (info.loc) mapa.fitBounds(L.latLng(info.loc.lat, info.loc.lng).toBounds(700), opts);
   }
 
   function cambiarVista(v) {
@@ -721,6 +823,7 @@
     if (v === "mapa" && mapa) {
       medirCabecera();
       mapa.invalidateSize({ animate: false });
+      medirCarrusel();
     }
     if (v === "agenda") window.scrollTo({ top: 0 });
   }
@@ -741,6 +844,7 @@
     renderLista();
     renderPie();
     renderMapa(encuadrar);
+    renderCarrusel();
     if (window.innerWidth < 900 && $("#app").dataset.vista === "agenda") window.scrollTo({ top: 0 });
     else $("#lista").scrollTop = 0;
   }
@@ -1024,6 +1128,7 @@
         <label class="ajuste"><small>Por milla</small><input type="number" min="0" step="0.05" value="${T.porMilla}" data-aj="tarifa.porMilla"></label>
         <label class="ajuste"><small>Por minuto</small><input type="number" min="0" step="0.05" value="${T.porMinuto}" data-aj="tarifa.porMinuto"></label>
         <label class="ajuste"><small>Mínimo por viaje</small><input type="number" min="0" step="1" value="${T.minima}" data-aj="tarifa.minima"></label>
+        <label class="ajuste"><small>UberXXL (veces el XL)</small><input type="number" min="1" step="0.05" value="${T.factorXXL || 1.15}" data-aj="tarifa.factorXXL"></label>
         <h3>Exportar y compartir</h3>
         <div class="ajuste ancho ajustes-acc">
           <button class="btn btn-sec" data-exportar="csv">${IC.bajar}Descargar Excel (todos los viajes)</button>
@@ -1047,6 +1152,7 @@
     calcular();
     renderLista();
     renderPie();
+    renderCarrusel();
     clearTimeout(aplicarAjuste.t);
     aplicarAjuste.t = setTimeout(() => {
       renderMapa(false);
@@ -1088,7 +1194,7 @@
           `${SEM[f.getDay()]} · ${etiquetaDia(d)}`,
           t.desde ? t.desde.nombre : "A confirmar",
           t.hacia ? t.hacia.nombre : "A confirmar",
-          { uber: S.vehiculo || "UberXL", pie: "A pie", grupo: "Con el grupo" }[t.modo],
+          { uber: t.vehiculo || S.vehiculo || "UberXL", pie: "A pie", grupo: "Con el grupo" }[t.modo],
           t.modo === "uber" ? hhmm(t.pedir) : "",
           hhmm(t.salir),
           hhmm(t.llega),
@@ -1129,7 +1235,7 @@
         L1.push(`${n.fija ? "" : "≈"}${hhmm(n.ini)} ${n.act.nombre}${n.loc ? "" : " (lugar a confirmar)"}`);
       } else if (n.tipo === "tramo" && !n.mismo) {
         const dest = n.hacia ? n.hacia.nombre : "a confirmar";
-        if (n.modo === "uber") L1.push(`   🚗 pedir Uber ${hhmm(n.pedir)} → ${dest} (llegan ${hhmm(n.llega)}) · ~${usd(n.costo)}`);
+        if (n.modo === "uber") L1.push(`   🚗 pedir ${n.vehiculo === "UberXXL" ? "UberXXL" : "Uber"} ${hhmm(n.pedir)} → ${dest} (llegan ${hhmm(n.llega)}) · ~${usd(n.costo)}`);
         else if (n.modo === "pie") L1.push(`   🚶 salir ${hhmm(n.salir)} caminando → ${dest}`);
         else L1.push(`   🚌 con el grupo → ${dest}`);
       }
@@ -1294,7 +1400,36 @@
     $("#pie-presu").addEventListener("click", (e) => { if (window.innerWidth < 900 && !e.target.closest("#btn-presu")) { renderPresu(); abrirModal("#modal-presu"); } });
     $("#btn-info").addEventListener("click", () => abrirModal("#modal-info"));
     $("#btn-offline").addEventListener("click", descargarMapas);
-    $("#btn-encuadrar").addEventListener("click", () => { selKey = null; $$(".tramo-caja.sel").forEach((x) => x.classList.remove("sel")); resaltar(); encuadrarDia(); });
+    $("#btn-encuadrar").addEventListener("click", () => {
+      selKey = null;
+      carSel = null;
+      $$(".tramo-caja.sel, #carrusel .car.sel").forEach((x) => x.classList.remove("sel"));
+      resaltar();
+      marcarMarca(null);
+      encuadrarDia();
+    });
+
+    $("#carrusel").addEventListener("click", (e) => {
+      const ag = e.target.closest("[data-car-agenda]");
+      if (ag) { irAAct(+ag.dataset.carAgenda); return; }
+      if (e.target.closest("[data-car-parada]")) { abrirParada({ di: diaSel, insertar: (S.dias[diaSel].actividades || []).length, foco: "buscar" }); return; }
+      if (e.target.closest("a, button")) return;
+      const c = e.target.closest(".car");
+      if (c) seleccionarCar(c.dataset.car, true);
+    });
+    $("#carrusel").addEventListener("scroll", () => {
+      clearTimeout(timerCar);
+      timerCar = setTimeout(() => {
+        const c = $("#carrusel");
+        const medio = c.scrollLeft + c.clientWidth / 2;
+        let mejor = null, dist = Infinity;
+        $$(".car", c).forEach((el) => {
+          const dd = Math.abs(el.offsetLeft + el.offsetWidth / 2 - medio);
+          if (dd < dist) { dist = dd; mejor = el; }
+        });
+        if (mejor && mejor.dataset.car !== carSel && c.scrollLeft > 4) seleccionarCar(mejor.dataset.car, false);
+      }, 160);
+    }, { passive: true });
 
     $$(".tabbar button").forEach((b) => b.addEventListener("click", () => {
       if (b.dataset.vista === "presu") { renderPresu(); abrirModal("#modal-presu"); return; }
@@ -1357,7 +1492,13 @@
       if (e.key === "Escape" && eligiendo) { eligiendo = false; $("#app").classList.remove("eligiendo"); abrirModal("#modal-parada"); }
     });
 
-    window.addEventListener("resize", () => { medirCabecera(); if (mapa) mapa.invalidateSize(); });
+    let eraMovil = esMovil();
+    window.addEventListener("resize", () => {
+      medirCabecera();
+      medirCarrusel();
+      if (mapa) mapa.invalidateSize();
+      if (esMovil() !== eraMovil) { eraMovil = esMovil(); renderMapa(false); }
+    });
     window.addEventListener("online", () => render(false));
 
     setInterval(() => {
