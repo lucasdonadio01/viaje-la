@@ -20,6 +20,16 @@ Para que las chicas puedan editar: **Settings → Collaborators → Add people**
 - **Abrir Uber** abre la app con el origen y el destino ya cargados. **Maps** abre la ruta en Google Maps.
 - En **Mapa**, las tarjetas de abajo se deslizan: cada una muestra la actividad, a qué hora pedir el Uber y cuánto sale, y la marca en el mapa.
 
+## Presupuestos: cada uno el suyo
+
+En **Presupuestos** (la cuarta pestaña en el celular, o el chanchito de arriba en la compu) cada uno arma su presupuesto del viaje: <https://lucasdonadio01.github.io/viaje-la/presupuesto/>
+
+- **Agregar mi presupuesto:** nombre y cuánta plata llevás. Arranca con los gastos del grupo (tu parte del Uber según la agenda, Horror Nights, la eSIM, la comida, los snacks de *Morfando en LA* y el súper), y todo se puede apagar, cambiar o borrar.
+- **Compras:** *Agregar algo para comprar* → elegís la tienda (Best Buy, Walmart, Target, Costco, Apple, Amazon, Nike, Ross, TJ Maxx, Sephora, outlets…) y anotás el precio. Si pegás el link del producto se completan solos la tienda y el nombre (y la foto, en Best Buy). Los botones de búsqueda abren la tienda o Google Shopping para ver el precio.
+- Los precios de las etiquetas no incluyen el impuesto de venta: se suma aparte (10,25 % en casi todo LA desde el 1/10/2026). Si las compras pasan la franquicia de US$ 500, avisa cuánto se paga en Ezeiza.
+- Cada presupuesto queda guardado **en el celular de cada uno**. **Compartir resumen** manda el total y la lista de compras al grupo; **Guardar copia / Cargar copia** lo pasa a otro dispositivo.
+- Los valores iniciales están en `presupuesto/datos.js`: la plantilla, el presupuesto de Lucas, el súper y la lista de tiendas con sus links de búsqueda. Lo que se cambie ahí lo ven quienes entran por primera vez o tocan *Volver a los valores iniciales*.
+
 ## Cambiar algo del itinerario
 
 **Desde la web:** con **+ Parada**, el lápiz de cada actividad o el buscador de arriba. Esos cambios quedan guardados sólo en ese dispositivo. Para compartirlos: **Ajustes → Descargar datos.js** y subir ese archivo al repositorio, reemplazando el anterior.

@@ -119,6 +119,7 @@ button { cursor: pointer; }
   color: var(--text);
 }
 .icono-btn:hover { background: var(--card-2); }
+a.icono-btn { text-decoration: none; }
 
 .buscador {
   margin: 6px 18px 12px;
@@ -862,8 +863,10 @@ button { cursor: pointer; }
     border-top: 1px solid var(--line);
     z-index: 30;
   }
-  .tabbar button {
+  .tabbar button, .tabbar a {
     flex: 1;
+    min-width: 0;
+    padding: 0 2px;
     border: 0;
     background: transparent;
     color: var(--muted-2);
@@ -874,10 +877,12 @@ button { cursor: pointer; }
     gap: 3px;
     font-size: 12px;
     font-weight: 600;
+    text-decoration: none;
   }
-  .tabbar button .ms { font-size: 24px; }
+  .tabbar button .ms, .tabbar a .ms { font-size: 24px; }
   .tabbar button.activo .ms { font-variation-settings: "FILL" 1, "wght" 500, "GRAD" 0, "opsz" 24; }
   .tabbar button.activo { color: var(--text); }
+  .solo-desk { display: none; }
 
   .modal {
     width: 100vw;

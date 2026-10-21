@@ -578,6 +578,7 @@
     $("#presu-dia-pp").textContent = libre ? "estimado · " + usdPP(R.porLibre / personas) + " c/u" : usdPP(p.total / personas) + " c/u";
     $("#presu-total").textContent = usd(R.total);
     $("#presu-total-pp").textContent = usdPP(R.total / personas) + " c/u";
+    try { localStorage.setItem(LS + ":uberPP", String(Math.round(R.total / personas))); } catch (e) {}
     $("#chip-vehiculo").textContent = `${S.vehiculo || "UberXL"} · ${personas}`;
     $("#chip-margen").textContent = `+${+S.ajustes.margenDinamica || 0}%`;
   }
@@ -1537,6 +1538,13 @@
   eventos();
   medirCabecera();
   render(true);
+
+  const ir = location.hash.slice(1);
+  if (ir === "mapa" || ir === "uber") {
+    history.replaceState(null, "", location.pathname + location.search);
+    const b = $(`.tabbar button[data-vista="${ir === "uber" ? "presu" : "mapa"}"]`);
+    if (b) b.click();
+  }
 
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

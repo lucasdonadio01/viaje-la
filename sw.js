@@ -1,6 +1,9 @@
-const V = "la26-v4";
+const V = "la26-v5";
 const TILES = "la26-tiles";
-const APP = ["./", "index.html", "estilos.css", "app.js", "datos.js", "rutas.js", "manifest.webmanifest", "icono.svg"];
+const APP = [
+  "./", "index.html", "estilos.css", "app.js", "datos.js", "rutas.js", "manifest.webmanifest", "icono.svg",
+  "presupuesto/", "presupuesto/presupuesto.css", "presupuesto/presupuesto.js", "presupuesto/datos.js"
+];
 const CDN = [
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"

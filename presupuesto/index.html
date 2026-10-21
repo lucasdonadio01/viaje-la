@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>LA 26 · Presupuestos</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icono.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&icon_names=add,calendar_month,close,cookie,delete,directions_walk,download,edit,local_taxi,map,open_in_new,payments,restaurant,savings,search,share,shopping_bag,shopping_cart,upload,warning&display=block">
+<link rel="stylesheet" href="presupuesto.css">
+</head>
+<body>
+<header class="top">
+  <a class="marca" href="../">
+    <span class="logo">LA</span>
+    <span class="marca-txt">
+      <strong>Presupuestos</strong>
+      <small>LA 26 · cada uno con el suyo</small>
+    </span>
+  </a>
+  <a class="btn btn-sec btn-chico solo-desk" href="../">
+    <span class="ms" aria-hidden="true">calendar_month</span>
+    Agenda y Ubers
+  </a>
+</header>
+
+<nav class="personas" id="personas" aria-label="Presupuesto de cada uno"></nav>
+
+<section class="bienvenida" id="bienvenida" hidden>
+  <div class="caja">
+    <h2><span class="ms" aria-hidden="true">savings</span>Cada uno arma su presupuesto</h2>
+    <p class="sub">Tocá tu nombre o agregá el tuyo. Arranca con los gastos del grupo (Uber, entradas, comida, súper) y le sumás lo que quieras comprar. Se guarda en este celular.</p>
+    <div class="fila-btns" id="bienvenida-btns"></div>
+  </div>
+</section>
+
+<div class="wrap" id="wrap">
+  <aside class="resumen">
+    <div class="caja">
+      <div class="cab-persona">
+        <span class="sig" id="p-sig"></span>
+        <div class="cab-persona-txt">
+          <small class="rotulo">Presupuesto de</small>
+          <h1 id="p-nombre"></h1>
+          <p class="sub" id="p-fechas"></p>
+        </div>
+        <button class="icono-btn" id="editar-persona" aria-label="Editar nombre y color">
+          <span class="ms" aria-hidden="true">edit</span>
+        </button>
+      </div>
+      <div class="recibo">
+        <label for="recibo">Llevo para el viaje</label>
+        <input class="num" id="recibo" type="number" min="0" step="50" inputmode="numeric" data-k="recibo">
+      </div>
+      <div class="queda" id="queda">
+        <small>Me queda</small>
+        <b id="queda-n">US$ 0</b>
+        <span id="queda-sub"></span>
+      </div>
+      <div class="barra" id="barra"></div>
+      <div class="leyenda" id="leyenda"></div>
+      <div class="fila-btns acciones">
+        <button class="btn btn-sec btn-chico" id="compartir">
+          <span class="ms" aria-hidden="true">share</span>
+          Compartir resumen
+        </button>
+      </div>
+    </div>
+    <div class="avisos" id="avisos"></div>
+  </aside>
+
+  <main class="cols">
+    <section class="caja">
+      <div class="cab">
+        <div><h2><span class="ms" aria-hidden="true">local_taxi</span>Reservas fijas</h2><p class="sub">Lo que separo antes de comprar nada</p></div>
+        <div class="tot"><b id="t-reservas">US$ 0</b><small>reservado</small></div>
+      </div>
+      <div id="reservas"></div>
+      <button class="btn btn-sec btn-chico agregar-chico" data-agregar="reservas">
+        <span class="ms" aria-hidden="true">add</span>
+        Agregar reserva
+      </button>
+    </section>
+
+    <section class="caja">
+      <div class="cab">
+        <div><h2><span class="ms" aria-hidden="true">restaurant</span>Comida</h2><p class="sub">Almuerzo y cena todos los días</p></div>
+        <div class="tot"><b id="t-comida">US$ 0</b><small id="t-comida-sub"></small></div>
+      </div>
+      <div class="comida">
+        <label>Días<input class="num chico" type="number" min="0" step="1" inputmode="numeric" data-k="dias"></label>
+        <label>Almuerzo (US$)<input class="num chico" type="number" min="0" step="1" inputmode="decimal" data-k="almuerzo"></label>
+        <label>Cena (US$)<input class="num chico" type="number" min="0" step="1" inputmode="decimal" data-k="cena"></label>
+      </div>
+    </section>
+
+    <section class="caja">
+      <div class="cab">
+        <div><h2><span class="ms" aria-hidden="true">cookie</span>Morfando en LA</h2><p class="sub">Lo característico de cada lugar</p></div>
+        <div class="tot"><b id="t-snacks">US$ 0</b><small id="t-snacks-sub"></small></div>
+      </div>
+      <div class="snacks" id="snacks"></div>
+      <button class="btn btn-sec btn-chico agregar-chico" data-agregar="snacks">
+        <span class="ms" aria-hidden="true">add</span>
+        Agregar comida
+      </button>
+      <p class="nota">Precios aproximados de los menús 2026 (con impuesto). Tocá el monto para corregirlo cuando lo veas en el lugar.</p>
+    </section>
+
+    <section class="caja">
+      <div class="cab">
+        <div><h2><span class="ms" aria-hidden="true">shopping_cart</span>Súper · pozo común</h2><p class="sub" id="super-sub">Primera compra para la casa</p></div>
+        <div class="tot"><b id="t-super">US$ 0</b><small id="t-super-sub"></small></div>
+      </div>
+      <div class="tiendas" id="tiendas"></div>
+      <div class="comida">
+        <label>Pozo total (US$)<input class="num chico" type="number" min="0" step="5" inputmode="decimal" data-sk="pozo"></label>
+        <label>Personas<input class="num chico" type="number" min="1" step="1" inputmode="numeric" data-sk="personas"></label>
+      </div>
+      <div class="pozo" id="pozo"></div>
+      <div id="super"></div>
+      <div class="fila" id="mi-parte"></div>
+      <p class="nota">El súper es el mismo para todos los presupuestos de este celular. Precios aproximados de marcas propias y comunes en LA (2026). En California la comida no paga impuesto; el papel higiénico sí.</p>
+    </section>
+
+    <section class="caja">
+      <div class="cab">
+        <div><h2><span class="ms" aria-hidden="true">shopping_bag</span>Compras</h2><p class="sub">Best Buy, Walmart, Target, outlets… activá lo que vas a comprar</p></div>
+        <div class="tot"><b id="t-compras">US$ 0</b><small id="t-compras-sub"></small></div>
+      </div>
+      <div id="compras"></div>
+      <button class="agregar" data-agregar-compra="">
+        <span class="ms" aria-hidden="true">add</span>
+        <span><b>Agregar algo para comprar</b><small>Elegí la tienda, buscá el producto y anotá el precio</small></span>
+      </button>
+      <div id="impuesto"></div>
+      <div class="fila-btns">
+        <button class="btn btn-sec btn-chico" id="todo-off">Apagar todas las compras</button>
+        <button class="btn btn-sec btn-chico" id="reset">Volver a los valores iniciales</button>
+      </div>
+    </section>
+
+    <section class="caja">
+      <div class="cab">
+        <div><h2><span class="ms" aria-hidden="true">download</span>Pasar a otro celular</h2><p class="sub">Guardá una copia de este presupuesto y abrila en otro dispositivo, o mandásela a alguien del grupo.</p></div>
+      </div>
+      <div class="fila-btns">
+        <button class="btn btn-sec btn-chico" id="exportar">
+          <span class="ms" aria-hidden="true">download</span>
+          Guardar copia
+        </button>
+        <label class="btn btn-sec btn-chico" for="archivo">
+          <span class="ms" aria-hidden="true">upload</span>
+          Cargar copia
+        </label>
+        <input type="file" id="archivo" accept=".json,application/json" hidden>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="tabbar" aria-label="Secciones">
+  <a href="../">
+    <span class="ms" aria-hidden="true">calendar_month</span>
+    Agenda
+  </a>
+  <a href="../#mapa">
+    <span class="ms" aria-hidden="true">map</span>
+    Mapa
+  </a>
+  <a href="../#uber">
+    <span class="ms" aria-hidden="true">payments</span>
+    Uber
+  </a>
+  <a href="./" class="activo" aria-current="page">
+    <span class="ms" aria-hidden="true">savings</span>
+    Presupuestos
+  </a>
+</nav>
+
+<dialog class="modal" id="modal-persona">
+  <form method="dialog" class="modal-cuerpo" id="form-persona">
+    <header class="modal-cab">
+      <h2 id="persona-titulo">Nuevo presupuesto</h2>
+      <button type="button" class="icono-btn" data-cerrar aria-label="Cerrar">
+        <span class="ms" aria-hidden="true">close</span>
+      </button>
+    </header>
+    <label class="campo">
+      <span>Nombre</span>
+      <input id="pe-nombre" type="text" maxlength="24" placeholder="Ej: Caro" autocomplete="off">
+    </label>
+    <label class="campo">
+      <span>Plata que llevás (US$)</span>
+      <input id="pe-recibo" type="number" min="0" step="50" inputmode="numeric" placeholder="Ej: 2000">
+    </label>
+    <div class="campo">
+      <span>Color</span>
+      <div class="colores" id="pe-colores"></div>
+    </div>
+    <p class="ayuda" id="pe-ayuda">Arranca con los gastos del grupo (Uber, entradas, comida y súper) y después cambiás lo que quieras.</p>
+    <footer class="modal-pie">
+      <button type="button" class="btn btn-peligro" id="pe-borrar">Borrar</button>
+      <span class="espacio"></span>
+      <button type="button" class="btn btn-sec" data-cerrar>Cancelar</button>
+      <button type="submit" class="btn" id="pe-guardar">Crear</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="modal" id="modal-item">
+  <form method="dialog" class="modal-cuerpo" id="form-item">
+    <header class="modal-cab">
+      <h2 id="item-titulo">Agregar</h2>
+      <button type="button" class="icono-btn" data-cerrar aria-label="Cerrar">
+        <span class="ms" aria-hidden="true">close</span>
+      </button>
+    </header>
+    <label class="campo">
+      <span>Nombre</span>
+      <input id="it-nombre" type="text" maxlength="80" autocomplete="off">
+    </label>
+    <label class="campo">
+      <span id="it-nota-label">Detalle</span>
+      <input id="it-nota" type="text" maxlength="120" autocomplete="off" placeholder="Opcional">
+    </label>
+    <label class="campo">
+      <span>Precio (US$)</span>
+      <input id="it-precio" type="number" min="0" step="0.01" inputmode="decimal">
+    </label>
+    <footer class="modal-pie">
+      <button type="button" class="btn btn-peligro" id="it-borrar">Borrar</button>
+      <span class="espacio"></span>
+      <button type="button" class="btn btn-sec" data-cerrar>Cancelar</button>
+      <button type="submit" class="btn" id="it-guardar">Agregar</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="modal" id="modal-compra">
+  <form method="dialog" class="modal-cuerpo" id="form-compra">
+    <header class="modal-cab">
+      <h2 id="compra-titulo">Agregar compra</h2>
+      <button type="button" class="icono-btn" data-cerrar aria-label="Cerrar">
+        <span class="ms" aria-hidden="true">close</span>
+      </button>
+    </header>
+    <label class="campo">
+      <span>Link del producto (opcional)</span>
+      <input id="c-link" type="url" inputmode="url" placeholder="Pegá el link de Best Buy, Walmart, Amazon…" autocomplete="off">
+      <small class="ayuda" id="c-link-ayuda">Con el link se completan la tienda y el nombre. El precio lo anotás vos.</small>
+    </label>
+    <div class="campo">
+      <span>Tienda</span>
+      <div id="c-tiendas"></div>
+      <input id="c-tienda-otra" type="text" maxlength="40" placeholder="Nombre de la tienda" autocomplete="off" hidden>
+    </div>
+    <label class="campo">
+      <span>Producto</span>
+      <input id="c-nombre" type="text" maxlength="90" placeholder="Ej: AirPods 4" autocomplete="off">
+    </label>
+    <div class="fila-btns" id="c-buscar"></div>
+    <div class="fila-campos">
+      <label class="campo-mini"><small>Precio en la etiqueta (US$)</small><input id="c-precio" type="number" min="0" step="0.01" inputmode="decimal"></label>
+      <label class="campo-mini corto"><small>Cantidad</small><input id="c-cant" type="number" min="1" step="1" inputmode="numeric" value="1"></label>
+    </div>
+    <small class="ayuda">En EE. UU. la etiqueta no incluye el impuesto: se suma solo abajo, en Compras.</small>
+    <label class="campo">
+      <span>Nota</span>
+      <input id="c-nota" type="text" maxlength="120" placeholder="Opcional: color, talle, modelo…" autocomplete="off">
+    </label>
+    <footer class="modal-pie">
+      <button type="button" class="btn btn-peligro" id="c-borrar">Borrar</button>
+      <span class="espacio"></span>
+      <button type="button" class="btn btn-sec" data-cerrar>Cancelar</button>
+      <button type="submit" class="btn" id="c-guardar">Agregar</button>
+    </footer>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="datos.js"></script>
+<script src="presupuesto.js"></script>
+</body>
+</html>
