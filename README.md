@@ -22,7 +22,7 @@ Para que las chicas puedan editar: **Settings → Collaborators → Add people**
 
 ## Presupuestos: cada uno el suyo
 
-En **Presupuestos** (la cuarta pestaña en el celular, o el chanchito de arriba en la compu) cada uno arma su presupuesto del viaje: <https://lucasdonadio01.github.io/viaje-la/presupuesto/>
+En **Presupuestos** (la cuarta pestaña en el celular, o el botón de arriba a la derecha en la compu) cada uno arma su presupuesto del viaje: <https://lucasdonadio01.github.io/viaje-la/presupuesto/>
 
 - **Agregar mi presupuesto:** nombre y cuánta plata llevás. Arranca con los gastos del grupo (tu parte del Uber según la agenda, Horror Nights, la eSIM, la comida, los snacks de *Morfando en LA* y el súper), y todo se puede apagar, cambiar o borrar.
 - **Compras:** *Agregar algo para comprar* → elegís la tienda (Best Buy, Walmart, Target, Costco, Apple, Amazon, Nike, Ross, TJ Maxx, Sephora, outlets…) y anotás el precio. Si pegás el link del producto se completan solos la tienda y el nombre (y la foto, en Best Buy). Los botones de búsqueda abren la tienda o Google Shopping para ver el precio.

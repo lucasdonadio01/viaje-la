@@ -119,7 +119,6 @@ button { cursor: pointer; }
   color: var(--text);
 }
 .icono-btn:hover { background: var(--card-2); }
-a.icono-btn { text-decoration: none; }
 
 .buscador {
   margin: 6px 18px 12px;
@@ -494,6 +493,8 @@ a.icono-btn { text-decoration: none; }
   gap: 8px;
 }
 .chip-mapa { background: rgba(20, 20, 20, 0.92); backdrop-filter: blur(6px); }
+.btn-mapa { height: 34px; padding: 0 14px; font-size: 13px; text-decoration: none; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4); }
+.btn-mapa .ms { font-size: 18px; }
 .eligiendo .mapa { cursor: crosshair; }
 .eligiendo .mapa-acciones::before {
   content: "Tocá el mapa donde está la parada";
