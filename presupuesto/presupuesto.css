@@ -311,7 +311,10 @@ h2 .ms { color: var(--mint); }
 .opcion input { accent-color: var(--mint); width: 18px; height: 18px; margin: 0; }
 .opcion.sel { border-color: rgba(123, 224, 173, 0.7); background: var(--mint-soft); }
 .opcion span b { display: block; font-weight: 600; }
-.opcion span small { color: var(--muted); font-size: 12px; }
+.opcion span small { display: block; color: var(--muted); font-size: 12px; }
+.opcion small a { color: var(--mint); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
+.opcion small a:hover { text-decoration: underline; }
+.opcion small a .ms { font-size: 14px; }
 .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 6px; background: var(--amber-soft); color: var(--amber); margin-left: 6px; }
 
 .vacio-compras { margin: 10px 0 0; padding: 14px; border-radius: 12px; background: var(--card); color: var(--muted); font-size: 13px; }

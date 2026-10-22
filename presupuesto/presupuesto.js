@@ -53,7 +53,7 @@
       return Object.assign(base, {
         grupo: str(c.grupo, 90),
         sel: c.sel == null ? null : str(c.sel, 40),
-        opciones: c.opciones.map((o) => ({ id: str(o.id || uid(), 40), nombre: str(o.nombre, 90), nota: str(o.nota, 300), precio: n0(o.precio), img: urlOk(o.img) ? o.img.trim() : "" }))
+        opciones: c.opciones.map((o) => ({ id: str(o.id || uid(), 40), nombre: str(o.nombre, 90), nota: str(o.nota, 300), precio: n0(o.precio), img: urlOk(o.img) ? o.img.trim() : "", link: urlOk(o.link) ? o.link.trim() : "" }))
       });
     }
     return Object.assign(base, {
@@ -75,6 +75,7 @@
     const def = (k, v) => (x[k] == null || x[k] === "" ? v : n0(x[k]));
     return {
       id: str(x.id || uid(), 40),
+      version: Math.max(1, Math.round(n0(x.version)) || 1),
       nombre: str(x.nombre, 24).trim(),
       color: /^#[0-9a-f]{6}$/i.test(x.color) ? x.color : COLORES[0],
       recibo: n0(x.recibo),
@@ -94,6 +95,7 @@
   function crearPersona(datos, conAgenda) {
     const p = Object.assign(clon(D.plantilla), { impuesto: D.impuesto, franquicia: D.franquicia }, clon(datos));
     p.id = p.id || uid();
+    p.version = D.version || 1;
     p.color = p.color || colorLibre();
     const est = conAgenda ? uberAgenda() : null;
     const uber = p.reservas.find((r) => r.id === "uber");
@@ -101,11 +103,26 @@
     return normalizar(p);
   }
 
+  function sumarNuevos(p) {
+    const actual = D.version || 1;
+    if (p.version >= actual) return false;
+    const seed = D.personas.find((s) => s.id === p.id);
+    ["reservas", "snacks", "compras"].forEach((k) => {
+      const fuente = (seed && seed[k]) || D.plantilla[k] || [];
+      fuente.forEach((it) => {
+        if ((it.desde || 1) > p.version && !p[k].some((x) => x.id === it.id)) p[k].push(k === "compras" ? limpiarCompra(it) : limpiarItem(it));
+      });
+    });
+    p.version = actual;
+    return true;
+  }
+
   function cargar() {
     let g = null;
     try { g = JSON.parse(localStorage.getItem(LS) || "null"); } catch (e) { g = null; }
     if (g && Array.isArray(g.personas) && g.super && Array.isArray(g.super.items) && Array.isArray(g.super.tiendas)) {
       E = { sel: g.sel, listo: !!g.listo, personas: g.personas.map(normalizar).filter(Boolean), super: g.super };
+      if (E.personas.map(sumarNuevos).some(Boolean)) guardar();
     } else {
       E = { sel: null, listo: false, personas: [], super: clon(D.super) };
       D.personas.forEach((p) => E.personas.push(crearPersona(p, false)));
@@ -146,6 +163,16 @@
     if (t && t.buscar && q) return t.buscar.includes("{q}") ? t.buscar.replace("{q}", encodeURIComponent(q)) : t.buscar + encodeURIComponent(q);
     if (t && t.web && !q) return t.web;
     return "https://www.google.com/search?udm=28&q=" + encodeURIComponent([q, t && !t.otra ? t.nombre : ""].filter(Boolean).join(" "));
+  }
+
+  function linkTienda(u) {
+    try {
+      const x = new URL(u);
+      if (/(^|\.)bestbuy\.com$/.test(x.hostname) && !x.searchParams.has("intl")) x.searchParams.set("intl", "nosplash");
+      return x.href;
+    } catch (e) {
+      return u;
+    }
   }
 
   const urlMapa = (t) => (t.online ? "" : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(t.mapa || `${t.nombre} near Hollywood, Los Angeles, CA`));
@@ -295,14 +322,14 @@
         <div class="opciones">${[{ id: null, nombre: "No compro", nota: "", precio: null }].concat(c.opciones).map((o) => `<label class="opcion ${c.sel === o.id ? "sel" : ""}">
           <input type="radio" name="g${i}" ${c.sel === o.id ? "checked" : ""} data-op="${i}" data-op-id="${esc(o.id || "")}">
           ${o.id ? fotoHTML(o.img, t) : '<span class="foto vacia"></span>'}
-          <span><b>${esc(o.nombre)}</b>${o.nota ? `<small>${esc(o.nota)}</small>` : ""}</span>
+          <span><b>${esc(o.nombre)}</b>${o.nota ? `<small>${esc(o.nota)}</small>` : ""}${urlOk(o.link) ? `<small><a href="${esc(linkTienda(o.link))}" target="_blank" rel="noopener">Ver en ${esc(t.nombre)}${ms("open_in_new")}</a></small>` : ""}</span>
           ${o.precio != null ? `<span class="precio"><em>US$</em>${num(o.precio, `data-op-p="${i}" data-op-pid="${esc(o.id)}"`, 0.01)}</span>` : "<span></span>"}
         </label>`).join("")}</div>
       </div>`;
     }
     const k = cant(c);
     const propio = urlOk(c.link);
-    const link = propio ? c.link : urlBuscar(t, c.nombre);
+    const link = propio ? linkTienda(c.link) : urlBuscar(t, c.nombre);
     const txtLink = propio ? "Ver el producto" : t.buscar ? `Buscar en ${esc(t.nombre)}` : "Buscar el precio";
     return `<div class="fila con-foto ${c.on ? "" : "off"}">
       ${sw(c.on, `data-co="${i}"`, c.nombre)}
