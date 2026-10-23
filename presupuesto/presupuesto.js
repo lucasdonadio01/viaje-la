@@ -103,14 +103,20 @@
     return normalizar(p);
   }
 
-  function sumarNuevos(p) {
+  const mismoNombre = (a, b) => String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
+
+  function ponerAlDia(p) {
     const actual = D.version || 1;
     if (p.version >= actual) return false;
     const seed = D.personas.find((s) => s.id === p.id);
+    const quitados = (seed && seed.quitados) || {};
     ["reservas", "snacks", "compras"].forEach((k) => {
+      p[k] = p[k].filter((x) => !((quitados[x.id] || 0) > p.version));
       const fuente = (seed && seed[k]) || D.plantilla[k] || [];
       fuente.forEach((it) => {
-        if ((it.desde || 1) > p.version && !p[k].some((x) => x.id === it.id)) p[k].push(k === "compras" ? limpiarCompra(it) : limpiarItem(it));
+        if ((it.desde || 1) <= p.version) return;
+        if (p[k].some((x) => x.id === it.id || mismoNombre(x.nombre || x.grupo, it.nombre || it.grupo))) return;
+        p[k].push(k === "compras" ? limpiarCompra(it) : limpiarItem(it));
       });
     });
     p.version = actual;
@@ -122,7 +128,7 @@
     try { g = JSON.parse(localStorage.getItem(LS) || "null"); } catch (e) { g = null; }
     if (g && Array.isArray(g.personas) && g.super && Array.isArray(g.super.items) && Array.isArray(g.super.tiendas)) {
       E = { sel: g.sel, listo: !!g.listo, personas: g.personas.map(normalizar).filter(Boolean), super: g.super };
-      if (E.personas.map(sumarNuevos).some(Boolean)) guardar();
+      if (E.personas.map(ponerAlDia).some(Boolean)) guardar();
     } else {
       E = { sel: null, listo: false, personas: [], super: clon(D.super) };
       D.personas.forEach((p) => E.personas.push(crearPersona(p, false)));
