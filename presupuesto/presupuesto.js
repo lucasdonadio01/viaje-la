@@ -30,6 +30,16 @@
   let E, P, toastT;
   let editPersona = null, colorSel = null, editItem = null;
   let editCompra = null, tiendaSel = "", fotoSel = "", nombreAuto = false;
+  const CATS = [
+    { id: "comida", nombre: "Comida", ms: "restaurant", color: "#f5c96a" },
+    { id: "uber", nombre: "Uber", ms: "local_taxi", color: "#9ec5ff" },
+    { id: "super", nombre: "Súper", ms: "shopping_cart", color: "#7be0ad" },
+    { id: "compras", nombre: "Compras", ms: "shopping_bag", color: "#c9b6ff" },
+    { id: "entradas", nombre: "Entradas", ms: "confirmation_number", color: "#f7c1dc" },
+    { id: "otros", nombre: "Otros", ms: "payments", color: "#cfcfcf" }
+  ];
+  const catDe = (id) => CATS.find((c) => c.id === id) || CATS[CATS.length - 1];
+  let vista = location.hash === "#gastos" ? "gastos" : "plan", calc = "", catSel = "otros";
 
   const colorLibre = () => {
     const usados = E ? E.personas.map((p) => p.color) : [];
@@ -44,6 +54,16 @@
 
   function limpiarItem(it) {
     return { id: str(it.id || uid(), 40), nombre: str(it.nombre, 90), nota: str(it.nota, 300), precio: n0(it.precio), on: it.on !== false };
+  }
+
+  function limpiarGasto(g) {
+    return {
+      id: str(g.id || uid(), 40),
+      monto: Math.round(n0(g.monto) * 100) / 100,
+      cat: CATS.some((c) => c.id === g.cat) ? g.cat : "otros",
+      nota: str(g.nota, 80),
+      ts: str(g.ts, 40)
+    };
   }
 
   function limpiarCompra(c) {
@@ -88,7 +108,8 @@
       miParte: x.miParte !== false,
       reservas: lista(x.reservas).map(limpiarItem),
       snacks: lista(x.snacks).map(limpiarItem),
-      compras: lista(x.compras).map(limpiarCompra)
+      compras: lista(x.compras).map(limpiarCompra),
+      gastos: lista(x.gastos).map(limpiarGasto).filter((g) => g.monto > 0)
     };
   }
 
@@ -103,20 +124,28 @@
     return normalizar(p);
   }
 
-  const mismoNombre = (a, b) => String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
+  const mismoNombre = (a, b) => {
+    const x = String(a || "").trim().toLowerCase(), y = String(b || "").trim().toLowerCase();
+    return !!x && x === y;
+  };
 
   function ponerAlDia(p) {
     const actual = D.version || 1;
     if (p.version >= actual) return false;
     const seed = D.personas.find((s) => s.id === p.id);
     const quitados = (seed && seed.quitados) || {};
-    ["reservas", "snacks", "compras"].forEach((k) => {
+    const poner = (seed && seed.poner) || {};
+    Object.keys(poner).forEach((v) => {
+      if (+v <= p.version) return;
+      ["recibo", "dias", "almuerzo", "cena", "impuesto", "franquicia"].forEach((f) => { if (poner[v][f] != null) p[f] = n0(poner[v][f]); });
+    });
+    ["reservas", "snacks", "compras", "gastos"].forEach((k) => {
       p[k] = p[k].filter((x) => !((quitados[x.id] || 0) > p.version));
       const fuente = (seed && seed[k]) || D.plantilla[k] || [];
       fuente.forEach((it) => {
         if ((it.desde || 1) <= p.version) return;
         if (p[k].some((x) => x.id === it.id || mismoNombre(x.nombre || x.grupo, it.nombre || it.grupo))) return;
-        p[k].push(k === "compras" ? limpiarCompra(it) : limpiarItem(it));
+        p[k].push(k === "compras" ? limpiarCompra(it) : k === "gastos" ? limpiarGasto(it) : limpiarItem(it));
       });
     });
     p.version = actual;
@@ -141,12 +170,13 @@
     let g = null;
     try { g = JSON.parse(localStorage.getItem(LS) || "null"); } catch (e) { g = null; }
     if (g && Array.isArray(g.personas) && g.super && Array.isArray(g.super.items) && Array.isArray(g.super.tiendas)) {
-      E = { sel: g.sel, listo: !!g.listo, personas: g.personas.map(normalizar).filter(Boolean), super: superAlDia(g.super) };
+      E = { sel: g.sel, listo: !!g.listo, ultimaCat: g.ultimaCat, personas: g.personas.map(normalizar).filter(Boolean), super: superAlDia(g.super) };
       if (E.personas.map(ponerAlDia).some(Boolean)) guardar();
     } else {
       E = { sel: null, listo: false, personas: [], super: superAlDia(null) };
       D.personas.forEach((p) => E.personas.push(crearPersona(p, false)));
     }
+    if (CATS.some((c) => c.id === E.ultimaCat)) catSel = E.ultimaCat;
     elegir(E.sel);
   }
 
@@ -297,12 +327,37 @@
     ? `<img class="foto" src="${esc(img)}" alt="" loading="lazy" data-sigla="${esc(t.sigla)}" data-color="${esc(t.color)}">`
     : `<span class="foto sig" style="background:${esc(t.color)}">${esc(t.sigla)}</span>`);
 
+  const gastado = (p) => (p.gastos || []).reduce((a, g) => a + n0(g.monto), 0);
+  const soloFecha = (g) => /^\d{4}-\d{2}-\d{2}$/.test(g.ts || "");
+  const fechaDe = (g) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(g.ts || "");
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12);
+    const d = new Date(g.ts);
+    return isNaN(d) ? null : d;
+  };
+  const fDia = new Intl.DateTimeFormat("es-AR", { weekday: "short", day: "numeric", month: "numeric" });
+  const fHora = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const claveDia = (d) => (d ? `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` : "sin");
+  function nombreDia(d) {
+    if (!d) return "Sin fecha";
+    const hoy = new Date(), ayer = new Date();
+    ayer.setDate(hoy.getDate() - 1);
+    if (claveDia(d) === claveDia(hoy)) return "Hoy";
+    if (claveDia(d) === claveDia(ayer)) return "Ayer";
+    return fDia.format(d);
+  }
+
   function pintarPersonas() {
     $("#personas").innerHTML = E.personas.map((p) => {
       const R = calcular(p), sel = P && p.id === P.id;
+      const enMano = n0(p.recibo) - gastado(p);
+      const neg = vista === "gastos" ? enMano < 0 : R.queda < 0;
+      const txt = vista === "gastos"
+        ? (enMano < 0 ? "se pasó " + fmt(-enMano) : "en mano " + fmt(enMano))
+        : (R.queda < 0 ? "se pasa " + fmt(-R.queda) : "queda " + fmt(R.queda));
       return `<button class="persona ${sel ? "sel" : ""}" data-persona="${esc(p.id)}" ${sel ? 'aria-current="true"' : ""}>
         <span class="sig" style="background:${esc(p.color)}">${esc(sigla(p.nombre))}</span>
-        <span><b>${esc(p.nombre)}</b><small class="${R.queda < 0 ? "neg" : ""}">${R.queda < 0 ? "se pasa " + fmt(-R.queda) : "queda " + fmt(R.queda)}</small></span>
+        <span><b>${esc(p.nombre)}</b><small class="${neg ? "neg" : ""}">${txt}</small></span>
       </button>`;
     }).join("") + `<button class="persona nueva" data-accion="nueva-persona">
         <span class="sig vacio">${ms("add")}</span>
@@ -434,6 +489,10 @@
     $("#queda").classList.toggle("neg", R.queda < 0);
     $("#queda-n").textContent = (R.queda < 0 ? "− " : "") + fmt(Math.abs(R.queda));
     $("#queda-sub").textContent = R.queda < 0 ? `Me paso por ${fmt(-R.queda)}` : `de ${fmt(P.recibo)} · gasto ${fmt(R.gastos)}`;
+    const real = gastado(P);
+    $("#real").innerHTML = real
+      ? `Gastado de verdad: <b>${fmt2(real)}</b> · en mano <b>${fmt(n0(P.recibo) - real)}</b> · <button type="button" class="link-btn" data-vista="gastos">Anotar gasto</button>`
+      : `¿Ya gastaste algo? <button type="button" class="link-btn" data-vista="gastos">Anotalo en Gastos</button>`;
     $("#t-reservas").textContent = fmt(R.reservas);
     $("#t-comida").textContent = fmt(R.comida);
     $("#t-comida-sub").textContent = `${n0(P.dias)} días × ${fmt(n0(P.almuerzo) + n0(P.cena))}`;
@@ -488,16 +547,107 @@
   }
 
   function todo() {
+    document.body.dataset.vista = vista;
     pintarBienvenida();
-    $("#wrap").hidden = !P;
+    $("#wrap").hidden = !P || vista !== "plan";
+    $("#vista-gastos").hidden = !P || vista !== "gastos";
+    $$("[data-vista]").forEach((b) => {
+      if (!b.closest(".segmentos") && !b.closest(".tabbar")) return;
+      const on = b.dataset.vista === vista;
+      b.classList.toggle("activo", on);
+      if (b.closest(".tabbar")) { if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); }
+      else b.setAttribute("aria-selected", on);
+    });
     if (P) {
       pintarListas();
       pintarSuper();
       pintarResumen();
+      pintarGastos();
     } else {
       pintarPersonas();
     }
-    document.title = P ? `Presupuesto de ${P.nombre} · LA 26` : "LA 26 · Presupuestos";
+    document.title = P ? `${vista === "gastos" ? "Gastos" : "Presupuesto"} de ${P.nombre} · LA 26` : "LA 26 · Presupuestos";
+  }
+
+  function ponerVista(v) {
+    vista = v === "gastos" ? "gastos" : "plan";
+    const hash = vista === "gastos" ? "#gastos" : "#plan";
+    if (location.hash !== hash) history.replaceState(null, "", hash);
+    todo();
+    window.scrollTo({ top: 0 });
+  }
+
+  const totalCalc = () => Math.round(calc.split("+").reduce((a, x) => a + (parseFloat(x) || 0), 0) * 100) / 100;
+
+  function pintarCalc() {
+    const tot = totalCalc(), partes = calc.split("+");
+    $("#calc-expr").textContent = partes.length > 1 ? partes.map((x) => x.replace(".", ",")).join(" + ") : "";
+    $("#calc-total").textContent = partes.length > 1 || !calc ? fmt2(tot) : "US$ " + calc.replace(".", ",");
+    const b = $("#g-anotar");
+    b.disabled = !(tot > 0);
+    b.textContent = tot > 0 ? `Anotar gasto de ${fmt2(tot)}` : "Anotar gasto";
+  }
+
+  function tecla(t) {
+    const ultimo = calc.split("+").pop();
+    if (t === "C") calc = "";
+    else if (t === "borrar") calc = calc.slice(0, -1);
+    else if (t === "+") { if (/[0-9.]$/.test(calc)) calc += "+"; }
+    else if (t === ".") { if (!ultimo.includes(".")) calc += ultimo === "" ? "0." : "."; }
+    else if (/^[0-9]$/.test(t)) {
+      if (/\.\d\d$/.test(ultimo) || calc.length >= 40) return;
+      if (ultimo === "0") calc = calc.slice(0, -1);
+      calc += t;
+    }
+    pintarCalc();
+  }
+
+  function anotar() {
+    const tot = totalCalc();
+    if (!P || !(tot > 0)) return;
+    const nota = $("#g-nota").value.trim().slice(0, 80);
+    P.gastos.push({ id: uid(), monto: tot, cat: catSel, nota, ts: new Date().toISOString() });
+    E.ultimaCat = catSel;
+    calc = "";
+    $("#g-nota").value = "";
+    guardar();
+    pintarGastos();
+    pintarResumen();
+    toast(`Anotado ${fmt2(tot)} · te quedan ${fmt(n0(P.recibo) - gastado(P))}`);
+  }
+
+  function pintarGastos() {
+    if (!P) return;
+    const R = calcular(P), g = gastado(P), recibo = n0(P.recibo), queda = recibo - g;
+    $("#g-queda-box").classList.toggle("neg", queda < 0);
+    $("#g-titulo").textContent = queda < 0 ? "Te pasaste por" : "Te quedan";
+    $("#g-queda").textContent = fmt(Math.abs(queda));
+    $("#g-sub").textContent = recibo ? `de ${fmt(recibo)} · gastaste ${fmt2(g)}` : `Gastaste ${fmt2(g)} · poné en el Plan cuánta plata llevás`;
+    $("#g-barra").style.width = Math.min(100, recibo ? (g / recibo) * 100 : 0) + "%";
+    const hoy = claveDia(new Date());
+    const deHoy = P.gastos.filter((x) => claveDia(fechaDe(x)) === hoy).reduce((a, x) => a + x.monto, 0);
+    $("#g-plan").textContent = `Hoy ${fmt2(deHoy)} · plan ${fmt(R.gastos)}${R.gastos ? ` (vas ${Math.round((g / R.gastos) * 100)} %)` : ""}`;
+    $("#g-cats").innerHTML = CATS.map((c) => `<button type="button" class="cat ${c.id === catSel ? "sel" : ""}" data-cat="${c.id}" aria-pressed="${c.id === catSel}">${ms(c.ms)}${esc(c.nombre)}</button>`).join("");
+    const orden = P.gastos.map((x, i) => ({ x, i, d: fechaDe(x) }))
+      .sort((a, b) => (b.d ? b.d.getTime() : 0) - (a.d ? a.d.getTime() : 0) || b.i - a.i);
+    const dias = [];
+    orden.forEach((o) => {
+      const k = claveDia(o.d);
+      let dd = dias.find((z) => z.k === k);
+      if (!dd) dias.push((dd = { k, d: o.d, items: [] }));
+      dd.items.push(o);
+    });
+    $("#g-lista").innerHTML = dias.length ? dias.map((dd) => `<div class="g-dia"><span>${esc(nombreDia(dd.d))}</span><span>${fmt2(dd.items.reduce((a, o) => a + o.x.monto, 0))}</span></div>` +
+      dd.items.map(({ x, i, d }) => {
+        const c = catDe(x.cat);
+        return `<div class="g-fila">
+          <span class="g-ico" style="background:${c.color}">${ms(c.ms)}</span>
+          <span class="g-txt"><b>${esc(x.nota || c.nombre)}</b><small>${esc(c.nombre)}${d && !soloFecha(x) ? " · " + fHora.format(d) : ""}</small></span>
+          <span class="g-monto">${fmt2(x.monto)}</span>
+          <button type="button" class="icono-btn chico" data-borrar-gasto="${i}" aria-label="Borrar este gasto" title="Borrar">${ms("delete")}</button>
+        </div>`;
+      }).join("")).join("") : '<p class="vacio-compras">Todavía no anotaste gastos. Escribí el monto en la calculadora y tocá Anotar.</p>';
+    pintarCalc();
   }
 
   function pintarColores() {
@@ -617,6 +767,8 @@
       `Súper (mi parte): ${fmt(R.miParte)}`,
       `Compras: ${fmt(R.compras)}${R.imp ? " con impuesto" : ""}`
     ];
+    const real = gastado(P);
+    if (real) l.splice(2, 0, `Gastado hasta ahora: ${fmt2(real)} · me quedan ${fmt(n0(P.recibo) - real)} en mano`);
     const porTienda = [];
     P.compras.forEach((c) => {
       const x = elegido(c);
@@ -737,8 +889,19 @@
       return;
     }
     if (d.accion === "nueva-persona") { abrirPersona(null); return; }
+    if (d.vista) { ponerVista(d.vista); return; }
     if (!P) return;
-    if (b.id === "editar-persona") abrirPersona(P);
+    if (d.tecla) tecla(d.tecla);
+    else if (b.id === "g-anotar") anotar();
+    else if (d.cat) {
+      catSel = d.cat;
+      E.ultimaCat = catSel;
+      guardar();
+      $$(".cat", $("#g-cats")).forEach((x) => { const on = x.dataset.cat === catSel; x.classList.toggle("sel", on); x.setAttribute("aria-pressed", on); });
+    } else if (d.borrarGasto != null) {
+      const x = P.gastos[+d.borrarGasto];
+      if (x && confirm(`¿Borrar el gasto de ${fmt2(x.monto)}${x.nota ? ` (${x.nota})` : ""}?`)) { P.gastos.splice(+d.borrarGasto, 1); guardar(); pintarGastos(); pintarResumen(); }
+    } else if (b.id === "editar-persona") abrirPersona(P);
     else if (d.agregar) abrirItem(d.agregar, null);
     else if (d.editar) abrirItem(d.editar, +d.i);
     else if (d.agregarCompra != null) abrirCompra(null, d.agregarCompra, d.nombreTienda);
@@ -753,6 +916,31 @@
   });
 
   $$("dialog").forEach((dl) => dl.addEventListener("click", (e) => { if (e.target === dl) dl.close(); }));
+
+  window.addEventListener("hashchange", () => {
+    const v = location.hash === "#gastos" ? "gastos" : "plan";
+    if (v === vista) return;
+    vista = v;
+    todo();
+    window.scrollTo({ top: 0 });
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (vista !== "gastos" || !P || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.closest && e.target.closest("input, textarea, select, dialog")) {
+      if (e.key === "Enter" && e.target.id === "g-nota") { e.preventDefault(); anotar(); }
+      return;
+    }
+    const k = e.key;
+    if (/^[0-9]$/.test(k)) tecla(k);
+    else if (k === "." || k === ",") tecla(".");
+    else if (k === "+") tecla("+");
+    else if (k === "Backspace") tecla("borrar");
+    else if (k === "Escape" || k === "Delete") tecla("C");
+    else if (k === "Enter") anotar();
+    else return;
+    e.preventDefault();
+  });
 
   $("#pe-colores").addEventListener("click", (e) => {
     const b = e.target.closest("[data-color]");

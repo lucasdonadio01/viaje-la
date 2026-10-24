@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 3,
+  "version": 4,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -36,8 +36,12 @@ window.PRESUPUESTO = {
       "id": "lucas",
       "nombre": "Lucas",
       "color": "#9ec5ff",
-      "recibo": 3200,
+      "recibo": 4400,
+      "poner": { "4": { "recibo": 4400 } },
       "quitados": { "samba": 3, "running-h": 3, "running-m": 3 },
+      "gastos": [
+        { "id": "g-2410-1", "desde": 4, "monto": 37, "cat": "otros", "nota": "", "ts": "2026-10-24" }
+      ],
       "compras": [
         { "id": "airpods", "tienda": "bestbuy", "nombre": "Apple AirPods 4 con cancelación de ruido", "nota": "Best Buy hoy US$ 119,99 (antes 179,99) · salieron los AirPods 5", "precio": 119.99, "on": false, "img": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/ed0cfc76-5b94-4e84-af82-a3cc7cff60e4.jpg;maxHeight=200;maxWidth=200?format=webp" },
         { "id": "pocket", "tienda": "bestbuy", "grupo": "DJI Osmo Pocket 3", "sel": null, "opciones": [

@@ -13,8 +13,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&icon_names=add,calendar_month,close,cookie,delete,directions_walk,download,edit,local_taxi,map,open_in_new,payments,restaurant,savings,search,share,shopping_bag,shopping_cart,upload,warning&display=block">
-<link rel="stylesheet" href="presupuesto.css?v=4">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&icon_names=add,backspace,calendar_month,close,confirmation_number,cookie,delete,directions_walk,download,edit,local_taxi,map,open_in_new,payments,receipt_long,restaurant,savings,search,share,shopping_bag,shopping_cart,upload,warning&display=block">
+<link rel="stylesheet" href="presupuesto.css?v=9">
 </head>
 <body>
 <header class="top">
@@ -32,6 +32,19 @@
 </header>
 
 <nav class="personas" id="personas" aria-label="Presupuesto de cada uno"></nav>
+
+<div class="vistas">
+  <div class="segmentos" role="tablist" aria-label="Plan o gastos">
+    <button type="button" data-vista="plan">
+      <span class="ms" aria-hidden="true">savings</span>
+      Plan
+    </button>
+    <button type="button" data-vista="gastos">
+      <span class="ms" aria-hidden="true">receipt_long</span>
+      Gastos
+    </button>
+  </div>
+</div>
 
 <section class="bienvenida" id="bienvenida" hidden>
   <div class="caja">
@@ -64,6 +77,7 @@
         <b id="queda-n">US$ 0</b>
         <span id="queda-sub"></span>
       </div>
+      <p class="real" id="real"></p>
       <div class="barra" id="barra"></div>
       <div class="leyenda" id="leyenda"></div>
       <div class="fila-btns acciones">
@@ -168,6 +182,47 @@
   </main>
 </div>
 
+<section class="gastos-vista" id="vista-gastos" hidden>
+  <div class="caja g-resumen" id="g-queda-box">
+    <small class="rotulo" id="g-titulo">Te quedan</small>
+    <b id="g-queda">US$ 0</b>
+    <span id="g-sub"></span>
+    <div class="g-barra"><i id="g-barra"></i></div>
+    <small class="g-plan" id="g-plan"></small>
+  </div>
+
+  <div class="caja calc">
+    <div class="calc-pantalla" aria-live="polite">
+      <span id="calc-expr"></span>
+      <b id="calc-total">US$ 0,00</b>
+    </div>
+    <div class="cats" id="g-cats"></div>
+    <input class="g-nota" id="g-nota" type="text" maxlength="80" placeholder="¿En qué? (opcional)" autocomplete="off">
+    <div class="teclado">
+      <button type="button" data-tecla="7" style="grid-area:k7">7</button>
+      <button type="button" data-tecla="8" style="grid-area:k8">8</button>
+      <button type="button" data-tecla="9" style="grid-area:k9">9</button>
+      <button type="button" data-tecla="borrar" class="op" style="grid-area:kb" aria-label="Borrar el último número"><span class="ms" aria-hidden="true">backspace</span></button>
+      <button type="button" data-tecla="4" style="grid-area:k4">4</button>
+      <button type="button" data-tecla="5" style="grid-area:k5">5</button>
+      <button type="button" data-tecla="6" style="grid-area:k6">6</button>
+      <button type="button" data-tecla="C" class="op" style="grid-area:kc" aria-label="Borrar todo">C</button>
+      <button type="button" data-tecla="1" style="grid-area:k1">1</button>
+      <button type="button" data-tecla="2" style="grid-area:k2">2</button>
+      <button type="button" data-tecla="3" style="grid-area:k3">3</button>
+      <button type="button" data-tecla="+" class="op mas" style="grid-area:kp" aria-label="Sumar">+</button>
+      <button type="button" data-tecla="0" style="grid-area:k0">0</button>
+      <button type="button" data-tecla="." style="grid-area:kd" aria-label="Coma decimal">,</button>
+    </div>
+    <button type="button" class="btn btn-anotar" id="g-anotar" disabled>Anotar gasto</button>
+  </div>
+
+  <div class="caja">
+    <h2><span class="ms" aria-hidden="true">receipt_long</span>Lo que gasté</h2>
+    <div id="g-lista"></div>
+  </div>
+</section>
+
 <nav class="tabbar" aria-label="Secciones">
   <a href="../">
     <span class="ms" aria-hidden="true">calendar_month</span>
@@ -181,9 +236,13 @@
     <span class="ms" aria-hidden="true">payments</span>
     Uber
   </a>
-  <a href="./" class="activo" aria-current="page">
+  <a href="#plan" data-vista="plan">
     <span class="ms" aria-hidden="true">savings</span>
     Presupuestos
+  </a>
+  <a href="#gastos" data-vista="gastos">
+    <span class="ms" aria-hidden="true">receipt_long</span>
+    Gastos
   </a>
 </nav>
 
@@ -289,7 +348,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="datos.js?v=5"></script>
-<script src="presupuesto.js?v=5"></script>
+<script src="datos.js?v=9"></script>
+<script src="presupuesto.js?v=9"></script>
 </body>
 </html>
