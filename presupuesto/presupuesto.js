@@ -417,7 +417,7 @@
       ${ms("map")}</a>`).join("") : "";
     $("#super").innerHTML = SU.items.map((x, i) => `<div class="fila ${x.on ? "" : "off"}">
       ${sw(x.on, `data-su="${i}"`, x.nombre)}
-      <div class="txt"><b>${esc(x.nombre)}</b><small>${fmt2(n0(x.p[SU.tienda]))} c/u${x.imp ? " + impuesto" : ""}</small></div>
+      <div class="txt"><b>${esc(x.nombre)}</b><small>${x.p[SU.tienda] == null ? `No hay en ${esc((SU.tiendas.find((t) => t.id === SU.tienda) || {}).nombre || "esta tienda")}` : `${fmt2(n0(x.p[SU.tienda]))} c/u${x.imp ? " + impuesto" : ""}`}</small></div>
       <div class="precio">${num(x.cant, `data-su-c="${i}"`)}<em>×</em><b class="sub-tot" data-su-t="${i}"></b></div></div>`).join("");
     $("#mi-parte").className = "fila" + (P.miParte ? "" : " off");
     $("#mi-parte").innerHTML = `${sw(P.miParte, "data-miparte", "Sumar mi parte del pozo")}<div class="txt"><b>Sumar mi parte del pozo a mi presupuesto</b><small>Lo que pongo yo: pozo ÷ personas</small></div><div class="precio"><b id="mi-aporte"></b></div>`;

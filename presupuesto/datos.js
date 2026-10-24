@@ -105,7 +105,8 @@ window.PRESUPUESTO = {
       { "id": "mayo", "nombre": "Mayonesa (30 oz)", "cant": 1, "p": { "pv": 6.49, "sf": 4.49, "tj": 3.99, "tg": 4.79 }, "on": true },
       { "id": "leche", "nombre": "Leche (1 galón, 3,8 L)", "cant": 2, "p": { "pv": 4.49, "sf": 3.49, "tj": 3.99, "tg": 3.79 }, "on": true },
       { "id": "jugo", "nombre": "Jugo de naranja (52 oz)", "cant": 2, "p": { "pv": 4.99, "sf": 3.49, "tj": 3.99, "tg": 3.79 }, "on": true },
-      { "id": "cereal", "nombre": "Cereal sin azúcar tipo Corn Flakes (18 oz)", "cant": 2, "p": { "pv": 5.49, "sf": 3.49, "tj": 3.49, "tg": 3.79 }, "on": true }
+      { "id": "cereal", "nombre": "Cereal sin azúcar tipo Corn Flakes (18 oz)", "cant": 2, "p": { "pv": 5.49, "sf": 3.49, "tj": 3.49, "tg": 3.79 }, "on": true },
+      { "id": "budin", "nombre": "Budín de limón glaseado (14 oz, 8 porciones)", "cant": 2, "p": { "pv": 6.99, "sf": 4.99, "tg": 5.49 }, "on": true }
     ]
   },
   "tiendas": [
