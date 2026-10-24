@@ -123,14 +123,28 @@
     return true;
   }
 
+  function superAlDia(guardado) {
+    const s = clon(D.super);
+    delete s.cercanos;
+    if (!guardado) return s;
+    if (guardado.pozo != null) s.pozo = guardado.pozo;
+    if (guardado.personas != null) s.personas = guardado.personas;
+    if (s.tiendas.some((t) => t.id === guardado.tienda)) s.tienda = guardado.tienda;
+    s.items.forEach((x) => {
+      const y = lista(guardado.items).find((z) => z.id === x.id);
+      if (y) { x.on = y.on !== false; x.cant = n0(y.cant); }
+    });
+    return s;
+  }
+
   function cargar() {
     let g = null;
     try { g = JSON.parse(localStorage.getItem(LS) || "null"); } catch (e) { g = null; }
     if (g && Array.isArray(g.personas) && g.super && Array.isArray(g.super.items) && Array.isArray(g.super.tiendas)) {
-      E = { sel: g.sel, listo: !!g.listo, personas: g.personas.map(normalizar).filter(Boolean), super: g.super };
+      E = { sel: g.sel, listo: !!g.listo, personas: g.personas.map(normalizar).filter(Boolean), super: superAlDia(g.super) };
       if (E.personas.map(ponerAlDia).some(Boolean)) guardar();
     } else {
-      E = { sel: null, listo: false, personas: [], super: clon(D.super) };
+      E = { sel: null, listo: false, personas: [], super: superAlDia(null) };
       D.personas.forEach((p) => E.personas.push(crearPersona(p, false)));
     }
     elegir(E.sel);
@@ -394,7 +408,13 @@
     $("#tiendas").innerHTML = SU.tiendas.map((t) => `<label class="opcion ${SU.tienda === t.id ? "sel" : ""}">
       <input type="radio" name="tienda-super" ${SU.tienda === t.id ? "checked" : ""} data-tienda-super="${esc(t.id)}">
       <span class="ms caminar" aria-hidden="true">directions_walk</span>
-      <span><b>${esc(t.nombre)}</b><small>${esc(t.dir)} · ${esc(t.camino)}</small></span><span></span></label>`).join("");
+      <span><b>${esc(t.nombre)}</b><small>${esc(t.dir)} · ${esc(t.camino)}</small></span>
+      <a class="icono-btn chico" href="${esc(urlMapa({ nombre: t.nombre, mapa: `${t.nombre}, ${t.dir}, Los Angeles, CA` }))}" target="_blank" rel="noopener" aria-label="Ver ${esc(t.nombre)} en el mapa" title="Ver en el mapa">${ms("map")}</a></label>`).join("");
+    const cerca = D.super.cercanos || [];
+    $("#cercanos").innerHTML = cerca.length ? '<b class="cercanos-tit">Otros súper cerca de la casa</b>' + cerca.map((c) => `<a class="cercano" href="${esc(urlMapa({ nombre: c.nombre, mapa: `${c.nombre}, ${c.dir}, Los Angeles, CA` }))}" target="_blank" rel="noopener">
+      <span class="ms caminar" aria-hidden="true">directions_walk</span>
+      <span><b>${esc(c.nombre)}</b><small>${esc(c.dir)} · ${esc(c.camino)}</small></span>
+      ${ms("map")}</a>`).join("") : "";
     $("#super").innerHTML = SU.items.map((x, i) => `<div class="fila ${x.on ? "" : "off"}">
       ${sw(x.on, `data-su="${i}"`, x.nombre)}
       <div class="txt"><b>${esc(x.nombre)}</b><small>${fmt2(n0(x.p[SU.tienda]))} c/u${x.imp ? " + impuesto" : ""}</small></div>

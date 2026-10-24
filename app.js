@@ -64,6 +64,7 @@
     S.ajustes = Object.assign({}, BASE.ajustes, S.ajustes);
     S.tarifa = Object.assign({}, BASE.tarifa, S.tarifa);
     S.lugares = Object.assign({}, BASE.lugares, S.lugares);
+    if (BASE.lugares.casa) S.lugares.casa = BASE.lugares.casa;
   }
 
   function guardar() {

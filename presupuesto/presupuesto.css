@@ -341,6 +341,15 @@ h2 .ms { color: var(--mint); }
 #impuesto .fila { border-top: 1px solid var(--line); }
 
 .tiendas { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.cercanos { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 12px; }
+.cercanos:empty { display: none; }
+.cercanos-tit { font-size: 13px; font-weight: 600; color: var(--muted); margin: 6px 0 2px; }
+.cercano { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); text-decoration: none; }
+.cercano:hover { background: var(--card-2); }
+.cercano b { display: block; font-weight: 600; }
+.cercano small { display: block; font-size: 12px; color: var(--muted); }
+.cercano > .ms:last-child { font-size: 18px; color: var(--mint); }
+.cercano, .cercano > span { min-width: 0; }
 .caminar { color: var(--mint); }
 .pozo { margin: 6px 0 4px; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; background: var(--mint-soft); color: var(--mint); }
 .pozo.neg { background: var(--red-soft); color: var(--red); }
@@ -497,6 +506,7 @@ h2 .ms { color: var(--mint); }
   .fila, .fila.con-foto, .opcion { row-gap: 8px; }
   .fila { grid-template-columns: auto 1fr; }
   .fila.con-foto, .opcion { grid-template-columns: auto auto 1fr; }
+  .tiendas .opcion { grid-template-columns: auto auto 1fr auto; }
   .fila .precio { grid-column: 2; justify-self: start; }
   .fila.con-foto .precio, .opcion .precio { grid-column: 2 / -1; justify-self: start; }
   .tienda-grupo { padding: 2px 10px; }

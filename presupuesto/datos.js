@@ -79,10 +79,18 @@ window.PRESUPUESTO = {
     "personas": 5,
     "tienda": "sf",
     "tiendas": [
-      { "id": "pv", "nombre": "Pavilions", "dir": "727 N Vine St (Melrose y Vine)", "camino": "≈ 9 min a pie · la más cerca, pero más cara" },
-      { "id": "sf", "nombre": "Smart & Final Extra!", "dir": "Barton Ave y Western Ave", "camino": "≈ 20 min a pie · la más barata, tipo Walmart" },
-      { "id": "tj", "nombre": "Trader Joe's", "dir": "1600 N Vine St (Sunset y Vine)", "camino": "≈ 20 min a pie · buenos precios, marca propia" },
-      { "id": "tg", "nombre": "Target", "dir": "5500 W Sunset Blvd (Sunset y Western)", "camino": "≈ 25 min a pie · súper y de todo" }
+      { "id": "sf", "nombre": "Smart & Final Extra!", "dir": "Western Ave y Barton Ave", "camino": "≈ 14 min a pie · la más cerca y la más barata, tipo Walmart" },
+      { "id": "pv", "nombre": "Pavilions", "dir": "727 N Vine St (Melrose y Vine)", "camino": "≈ 27 min a pie · la más cara" },
+      { "id": "tg", "nombre": "Target", "dir": "5500 W Sunset Blvd (Sunset y Western)", "camino": "≈ 28 min a pie · súper y de todo" },
+      { "id": "tj", "nombre": "Trader Joe's", "dir": "1600 N Vine St (Sunset y Vine)", "camino": "≈ 47 min a pie o 6 min en Uber · buenos precios, marca propia" }
+    ],
+    "cercanos": [
+      { "nombre": "HK Market", "dir": "124 N Western Ave", "camino": "≈ 12 min a pie · súper asiático, el más cerca" },
+      { "nombre": "California Marketplace", "dir": "450 S Western Ave", "camino": "≈ 26 min a pie · súper coreano grande" },
+      { "nombre": "Jons Marketplace", "dir": "5315 Santa Monica Blvd", "camino": "≈ 27 min a pie · barato, con productos latinos" },
+      { "nombre": "H Mart", "dir": "621 S Western Ave", "camino": "≈ 30 min a pie · súper coreano" },
+      { "nombre": "Vons", "dir": "3461 W 3rd St", "camino": "≈ 40 min a pie" },
+      { "nombre": "Ralphs", "dir": "3410 W 3rd St", "camino": "≈ 48 min a pie" }
     ],
     "items": [
       { "id": "pan", "nombre": "Pan lactal (20 oz)", "cant": 2, "p": { "pv": 3.99, "sf": 2.79, "tj": 2.99, "tg": 2.99 }, "on": true },

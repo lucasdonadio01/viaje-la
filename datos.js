@@ -24,7 +24,7 @@ window.VIAJE = {
     "factorXXL": 1.15
   },
   "lugares": {
-    "casa": { "nombre": "Casa · Airbnb", "direccion": "5925 Barton Ave, Los Angeles, CA 90038", "lat": 34.088293, "lng": -118.323275, "sigla": "casa", "color": "#ffffff" },
+    "casa": { "nombre": "Casa · Airbnb", "direccion": "517 N Saint Andrews Pl, Los Angeles, CA 90004", "lat": 34.080561, "lng": -118.311263, "sigla": "casa", "color": "#ffffff" },
     "lax": { "nombre": "LAX · Aeropuerto", "direccion": "1 World Way, Los Angeles, CA 90045", "lat": 33.9421675, "lng": -118.4085, "sigla": "LAX", "color": "#f5c96a", "recargo": 5, "nota": "Al llegar, el Uber se toma en LAX-it: salir de la terminal y seguir los carteles verdes al shuttle gratuito." },
     "warner": { "nombre": "Warner Bros. Studio Tour", "direccion": "3400 W Riverside Dr, Burbank, CA 91505", "lat": 34.1510304, "lng": -118.3359075, "sigla": "WB", "color": "#9ec5ff" },
     "grammy": { "nombre": "Grammy Museum", "direccion": "800 W Olympic Blvd, Los Angeles, CA 90015", "lat": 34.0450386, "lng": -118.2652342, "sigla": "GM", "color": "#f5c96a" },
@@ -83,7 +83,7 @@ window.VIAJE = {
     {
       "fecha": "2026-10-30", "agenda": 5, "titulo": "Paramount · Sony · Cena",
       "actividades": [
-        { "id": "d5a1", "nombre": "Paramount Studios VIP Tour", "hora": "08:30", "finHora": "13:00", "lugar": "paramount", "llegada": "pie", "nota": "Queda a 8 min caminando de la casa." },
+        { "id": "d5a1", "nombre": "Paramount Studios VIP Tour", "hora": "08:30", "finHora": "13:00", "lugar": "paramount", "llegada": "pie", "nota": "Queda a 16 min caminando de la casa." },
         { "id": "d5a2", "nombre": "Sony Studio Tour", "hora": "15:00", "finHora": "17:30", "lugar": "sony" },
         { "id": "d5a3", "nombre": "Cena grupal", "hora": "20:30", "finHora": "22:30", "lugar": null, "aConfirmar": true }
       ]
