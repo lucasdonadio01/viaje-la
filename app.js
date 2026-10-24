@@ -55,12 +55,19 @@
     if (g && g.data && g.data.dias) {
       S = g.data;
       baseVersion = g.baseVersion || 0;
-      hayGuardado = true;
-      if ((BASE.version || 0) > baseVersion) $("#aviso-nueva").hidden = false;
+      hayGuardado = g.pendiente !== false;
+      if ((BASE.version || 0) > baseVersion) {
+        if (hayGuardado) $("#aviso-nueva").hidden = false;
+        else { S = clon(BASE); baseVersion = BASE.version || 0; }
+      }
     } else {
       S = clon(BASE);
       baseVersion = BASE.version || 0;
     }
+    completar();
+  }
+
+  function completar() {
     S.ajustes = Object.assign({}, BASE.ajustes, S.ajustes);
     S.tarifa = Object.assign({}, BASE.tarifa, S.tarifa);
     S.lugares = Object.assign({}, BASE.lugares, S.lugares);
@@ -69,7 +76,110 @@
 
   function guardar() {
     hayGuardado = true;
-    try { localStorage.setItem(LS, JSON.stringify({ baseVersion, data: S })); } catch (e) {}
+    try { localStorage.setItem(LS, JSON.stringify({ baseVersion, data: S, pendiente: true })); } catch (e) {}
+    programarPublicacion();
+  }
+
+  const REPO = "lucasdonadio01/viaje-la";
+  const LS_TOKEN = LS + ":token";
+  let timerPublicar = null, publicando = false, ultimaPublicacion = "";
+
+  function tokenGH() {
+    try { return localStorage.getItem(LS_TOKEN) || ""; } catch (e) { return ""; }
+  }
+
+  function leerDatos(txt) {
+    const m = /^\s*window\.VIAJE\s*=\s*([\s\S]*?);?\s*$/.exec(txt || "");
+    if (!m) return null;
+    try { return JSON.parse(m[1]); } catch (e) { return null; }
+  }
+
+  function aBase64(txt) {
+    let bin = "";
+    new TextEncoder().encode(txt).forEach((b) => { bin += String.fromCharCode(b); });
+    return btoa(bin);
+  }
+
+  function deBase64(txt) {
+    const bin = atob(String(txt || "").replace(/\s/g, ""));
+    return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+  }
+
+  function textoDatos(version) {
+    const out = clon(S);
+    out.version = version;
+    if (Object.keys(rutasExtra).length) out.rutasExtra = rutasExtra;
+    return "window.VIAJE = " + JSON.stringify(out, null, 2) + ";\n";
+  }
+
+  function avisoPublicar(msg, ok) {
+    ultimaPublicacion = msg;
+    toast(msg);
+    const el = $("#gh-estado");
+    if (el) { el.textContent = msg; el.classList.toggle("ok", !!ok); }
+  }
+
+  function programarPublicacion() {
+    if (!tokenGH()) return;
+    clearTimeout(timerPublicar);
+    timerPublicar = setTimeout(() => publicar(false), 5000);
+  }
+
+  async function publicar(manual) {
+    const token = tokenGH();
+    if (!token) return;
+    if (publicando) { programarPublicacion(); return; }
+    if (!navigator.onLine) { avisoPublicar("Sin conexión: se publica cuando hagas otro cambio con internet", false); return; }
+    publicando = true;
+    const api = `https://api.github.com/repos/${REPO}/contents/datos.js`;
+    const h = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
+    try {
+      const r1 = await fetch(`${api}?ref=main&t=${Date.now()}`, { headers: h, cache: "no-store" });
+      if (!r1.ok) throw new Error(r1.status === 401 ? "la clave de GitHub no es válida o venció" : `GitHub respondió ${r1.status}`);
+      const actual = await r1.json();
+      const remoto = leerDatos(deBase64(actual.content)) || {};
+      if ((remoto.version || 0) > (baseVersion || 0) && !manual) {
+        avisoPublicar("Hay una versión más nueva publicada: tocá Usar la nueva, o Publicar ahora en Ajustes para pisarla", false);
+        return;
+      }
+      const version = Math.max(remoto.version || 0, BASE.version || 0, baseVersion || 0) + 1;
+      const r2 = await fetch(api, {
+        method: "PUT",
+        headers: Object.assign({ "Content-Type": "application/json" }, h),
+        body: JSON.stringify({ message: `Agenda: cambios desde la web (versión ${version})`, content: aBase64(textoDatos(version)), sha: actual.sha, branch: "main" })
+      });
+      if (!r2.ok) throw new Error(r2.status === 403 || r2.status === 404 ? "la clave no tiene permiso para editar el repositorio" : r2.status === 409 ? "se publicó otra cosa al mismo tiempo, probá de nuevo" : `GitHub respondió ${r2.status}`);
+      baseVersion = version;
+      hayGuardado = false;
+      try { localStorage.setItem(LS, JSON.stringify({ baseVersion, data: S, pendiente: false })); } catch (e) {}
+      avisoPublicar("Publicado para todos: lo ven en un par de minutos", true);
+    } catch (e) {
+      avisoPublicar("No se pudo publicar: " + (e.message || "sin conexión"), false);
+    } finally {
+      publicando = false;
+    }
+  }
+
+  async function buscarVersionNueva() {
+    if (!navigator.onLine) return;
+    let txt = null;
+    try {
+      const r = await fetch(`datos.js?t=${Date.now()}`, { cache: "no-store" });
+      if (r.ok) txt = await r.text();
+    } catch (e) {
+      return;
+    }
+    const nuevo = leerDatos(txt);
+    if (!nuevo || !nuevo.dias || (nuevo.version || 0) <= Math.max(BASE.version || 0, baseVersion || 0)) return;
+    Object.keys(BASE).forEach((k) => delete BASE[k]);
+    Object.assign(BASE, nuevo);
+    Object.assign(rutasExtra, BASE.rutasExtra || {});
+    if (hayGuardado) { $("#aviso-nueva").hidden = false; return; }
+    S = clon(BASE);
+    completar();
+    baseVersion = BASE.version || 0;
+    render(false);
+    toast("La agenda se actualizó con los cambios del grupo");
   }
 
   const aMin = (h) => {
@@ -1131,6 +1241,18 @@
         <label class="ajuste"><small>Por minuto</small><input type="number" min="0" step="0.05" value="${T.porMinuto}" data-aj="tarifa.porMinuto"></label>
         <label class="ajuste"><small>Mínimo por viaje</small><input type="number" min="0" step="1" value="${T.minima}" data-aj="tarifa.minima"></label>
         <label class="ajuste"><small>UberXXL (veces el XL)</small><input type="number" min="1" step="0.05" value="${T.factorXXL || 1.15}" data-aj="tarifa.factorXXL"></label>
+        <h3>Compartir cambios con el grupo</h3>
+        <div class="ajuste ancho gh">
+          ${tokenGH() ? `
+            <p class="gh-txt">Publicación automática activada en este celular: cada parada o cambio que hagas se publica para todos, y en un par de minutos lo ven al abrir la agenda.</p>
+            <div class="fila-btns"><button class="btn" data-gh="publicar">${IC.compartir}Publicar ahora</button><button class="btn btn-sec" data-gh="quitar">Desactivar</button></div>
+          ` : `
+            <p class="gh-txt">Para que lo que cambies acá les llegue a todos, pegá una clave de GitHub con permiso para editar este repositorio. Queda guardada sólo en este celular.</p>
+            <input type="password" id="gh-token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+            <div class="fila-btns"><button class="btn" data-gh="guardar">Activar</button><a class="btn btn-sec" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Crear la clave en GitHub</a></div>
+          `}
+          <small class="gh-estado" id="gh-estado">${esc(ultimaPublicacion)}</small>
+        </div>
         <h3>Exportar y compartir</h3>
         <div class="ajuste ancho ajustes-acc">
           <button class="btn btn-sec" data-exportar="csv">${IC.bajar}Descargar Excel (todos los viajes)</button>
@@ -1278,6 +1400,7 @@
       if (!confirm("¿Volver al itinerario publicado? Se borran los cambios hechos en este dispositivo.")) return;
       try { localStorage.removeItem(LS); } catch (e) {}
       S = clon(BASE);
+      completar();
       baseVersion = BASE.version || 0;
       hayGuardado = false;
       $("#modal-ajustes").close();
@@ -1473,9 +1596,36 @@
       if (guardarParada()) $("#modal-parada").close();
     });
 
+    $("#modal-ajustes").addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-gh]");
+      if (!b) return;
+      const accion = b.dataset.gh;
+      if (accion === "guardar") {
+        const t = ($("#gh-token").value || "").trim();
+        if (!/^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(t)) { toast("Esa clave no parece de GitHub: empieza con github_pat_"); return; }
+        b.disabled = true;
+        const ok = await fetch(`https://api.github.com/repos/${REPO}`, { headers: { Authorization: `Bearer ${t}`, Accept: "application/vnd.github+json" } })
+          .then((r) => r.ok).catch(() => false);
+        b.disabled = false;
+        if (!ok) { toast("GitHub no aceptó esa clave"); return; }
+        try { localStorage.setItem(LS_TOKEN, t); } catch (err) {}
+        renderAjustes();
+        toast("Listo: lo que cambies se publica para todos");
+        if (hayGuardado) publicar(true);
+      } else if (accion === "publicar") {
+        publicar(true);
+      } else if (accion === "quitar") {
+        if (!confirm("¿Dejar de publicar desde este celular? Se borra la clave guardada acá.")) return;
+        try { localStorage.removeItem(LS_TOKEN); } catch (err) {}
+        renderAjustes();
+        toast("Publicación desactivada en este celular");
+      }
+    });
+
     $("#usar-nueva").addEventListener("click", () => {
       try { localStorage.removeItem(LS); } catch (e) {}
       S = clon(BASE);
+      completar();
       baseVersion = BASE.version || 0;
       hayGuardado = false;
       $("#aviso-nueva").hidden = true;
@@ -1546,6 +1696,10 @@
     const b = $(`.tabbar button[data-vista="${ir === "uber" ? "presu" : "mapa"}"]`);
     if (b) b.click();
   }
+
+  buscarVersionNueva();
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") buscarVersionNueva(); });
+  setInterval(() => { if (document.visibilityState === "visible") buscarVersionNueva(); }, 5 * 60 * 1000);
 
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

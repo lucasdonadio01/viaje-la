@@ -33,7 +33,17 @@ En **Presupuestos** (la cuarta pestaña en el celular, o el botón de arriba a l
 
 ## Cambiar algo del itinerario
 
-**Desde la web:** con **+ Parada**, el lápiz de cada actividad o el buscador de arriba. Esos cambios quedan guardados sólo en ese dispositivo. Para compartirlos: **Ajustes → Descargar datos.js** y subir ese archivo al repositorio, reemplazando el anterior.
+**Desde la web:** con **+ Parada**, el lápiz de cada actividad o el buscador de arriba.
+
+Para que esos cambios les lleguen a todos solos, el celular de quien edita necesita una clave de GitHub (una sola vez):
+
+1. En GitHub: **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token** (o directo <https://github.com/settings/personal-access-tokens/new>).
+2. **Repository access:** *Only select repositories* → `viaje-la`. **Permissions → Contents:** *Read and write*. Elegir un vencimiento después del viaje (por ejemplo 30 días) y generar.
+3. En la agenda: **Ajustes → Compartir cambios con el grupo**, pegar la clave y tocar **Activar**. Queda guardada sólo en ese celular; **Desactivar** la borra.
+
+Desde ahí, cada parada o cambio se publica solo a los 5 segundos (o con **Publicar ahora**). Los demás lo ven al abrir o volver a la agenda: si no habían tocado nada se les actualiza solo, y si tenían cambios propios les aparece el aviso de versión nueva. Si se edita `datos.js` a mano en el repositorio, antes hay que traer lo publicado desde la web (`git pull`).
+
+Sin clave, los cambios quedan sólo en ese dispositivo; también se pueden compartir con **Ajustes → Descargar datos.js** y subiendo ese archivo al repositorio.
 
 **Desde GitHub:** editar `datos.js` (lápiz ✏️ en GitHub). Cada actividad se ve así:
 
