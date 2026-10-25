@@ -1,4 +1,4 @@
-const V = "la26-v16";
+const V = "la26-v17";
 const TILES = "la26-tiles";
 const APP = [
   "./", "index.html", "estilos.css", "app.js", "datos.js", "rutas.js", "manifest.webmanifest", "icono.svg",
@@ -62,7 +62,7 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  if (u.hostname === "cdnjs.cloudflare.com" || u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com") {
+  if (u.hostname === "cdnjs.cloudflare.com" || u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com" || (u.hostname === "www.gstatic.com" && u.pathname.startsWith("/firebasejs/"))) {
     e.respondWith(
       caches.match(req).then((h) =>
         h || fetch(req).then((r) => {

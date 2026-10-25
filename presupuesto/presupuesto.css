@@ -537,7 +537,6 @@ h2 .ms { color: var(--mint); }
 .sync-input { width: 100%; min-height: 42px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card); color: var(--text); font-size: 16px; }
 .sync-input:focus { outline: 2px solid rgba(123, 224, 173, 0.6); outline-offset: 0; border-color: transparent; }
 #sync-box > .sync-input, #sync-box > .fila-btns { margin-top: 8px; }
-.sync-codigo { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .sync-pegar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .sync-pegar .btn { height: 42px; }
 

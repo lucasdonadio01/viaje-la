@@ -193,44 +193,24 @@
   const guardarLocal = () => { try { localStorage.setItem(LS, JSON.stringify(E)); } catch (e) {} };
   const guardar = () => { guardarLocal(); programarSync(); };
 
-  // Sincronización entre los dispositivos de una persona: los presupuestos viajan cifrados
-  // a la rama "sync" del repositorio y cada dispositivo suma lo que cambió el otro.
-  const REPO = "lucasdonadio01/viaje-la";
-  const RAMA_SYNC = "sync";
-  const LS_TOKEN = "viajeLA26:token";
-  const LS_SYNC = "viajeLA26:sync";
-  const CREAR_CLAVE = "https://github.com/settings/personal-access-tokens/new?name=Viaje+LA&description=Agenda+y+presupuestos+del+viaje+a+LA&target_name=lucasdonadio01&expires_in=30&contents=write";
-  const CODIGO = /(?:#vincular=)?([A-Za-z0-9_-]{43})\.((?:github_pat_|ghp_)[A-Za-z0-9_]+)\s*$/;
-  const claveValida = (t) => /^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(t);
-  const tokenGH = () => { try { return localStorage.getItem(LS_TOKEN) || ""; } catch (e) { return ""; } };
-  const leerSync = () => { try { return JSON.parse(localStorage.getItem(LS_SYNC) || "null"); } catch (e) { return null; } };
-  const guardarSync = (Y) => { try { localStorage.setItem(LS_SYNC, JSON.stringify(Y)); } catch (e) {} };
-  const ghHeaders = () => ({ Authorization: `Bearer ${tokenGH()}`, Accept: "application/vnd.github+json" });
-  const urlSync = (archivo) => `https://api.github.com/repos/${REPO}/contents/presupuesto/sync/${archivo}.json`;
-  let syncando = false, otraVez = false, timerSync = null, verCodigo = false;
-
-  const bytesAB64 = (u8) => { let s = ""; u8.forEach((b) => { s += String.fromCharCode(b); }); return btoa(s); };
-  const b64ABytes = (t) => Uint8Array.from(atob(String(t || "").replace(/\s/g, "")), (c) => c.charCodeAt(0));
-  const secretoABytes = (s) => b64ABytes(s.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (s.length % 4)) % 4));
-  const nuevoSecreto = () => bytesAB64(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  const claveAes = (secreto) => crypto.subtle.importKey("raw", secretoABytes(secreto), "AES-GCM", false, ["encrypt", "decrypt"]);
-
-  async function cifrar(secreto, obj) {
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const datos = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await claveAes(secreto), new TextEncoder().encode(JSON.stringify(obj)));
-    return JSON.stringify({ v: 1, iv: bytesAB64(iv), datos: bytesAB64(new Uint8Array(datos)) });
-  }
-
-  async function descifrar(secreto, txt) {
-    const j = JSON.parse(txt);
-    const plano = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64ABytes(j.iv) }, await claveAes(secreto), b64ABytes(j.datos));
-    return JSON.parse(new TextDecoder().decode(plano));
-  }
-
-  async function archivoDe(secreto) {
-    const h = new Uint8Array(await crypto.subtle.digest("SHA-256", secretoABytes(secreto)));
-    return [...h.slice(0, 10)].map((b) => b.toString(16).padStart(2, "0")).join("");
-  }
+  // Sincronización entre los dispositivos de una persona: con su nombre y un PIN entra a una cuenta
+  // de Firebase, y la base de datos guarda sus presupuestos donde sólo esa cuenta llega.
+  const FB = {
+    apiKey: "AIzaSyApI3jYikS-DOz4xe8-n6GoQYP-0mSITDg",
+    authDomain: "viaje-la-26.firebaseapp.com",
+    databaseURL: "https://viaje-la-26-default-rtdb.firebaseio.com",
+    projectId: "viaje-la-26",
+    appId: "1:62612207070:web:0b4aadfd6de896a439994f"
+  };
+  const FB_SDK = "https://www.gstatic.com/firebasejs/12.4.0/";
+  const LS_CUENTA = "viajeLA26:cuenta";
+  const leerCuenta = () => { try { return JSON.parse(localStorage.getItem(LS_CUENTA) || "null"); } catch (e) { return null; } };
+  const guardarCuenta = (C) => { try { if (C) localStorage.setItem(LS_CUENTA, JSON.stringify(C)); else localStorage.removeItem(LS_CUENTA); } catch (e) {} };
+  const slug = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "yo";
+  // En la compu, para probar, se puede usar el simulador local de Firebase en vez del real.
+  const usarSimulador = () => /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && localStorage.getItem("viajeLA26:simulador") === "1";
+  let fb = null, cargandoFb = null, refDatos = null, dejarDeEscuchar = null;
+  let subiendo = false, otraVez = false, timerSync = null, pinNuevo = "";
 
   const esObj = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
   const claveDe = (x) => (esObj(x) ? x.id || x.fecha || null : null);
@@ -244,8 +224,8 @@
     return a == null && b == null;
   }
 
-  // b: lo que tenían los dos la última vez · l: lo de este dispositivo · r: lo del otro.
-  // Lo que cambió de un solo lado se conserva; si cambió de los dos lados, queda lo del otro.
+  // b: lo que tenían los dos la última vez · l: lo de este dispositivo · r: lo de la base.
+  // Lo que cambió de un solo lado se conserva; si cambió de los dos lados, queda lo de la base.
   function mezclar(b, l, r) {
     if (igual(l, b)) return copia(r);
     if (igual(r, b) || igual(l, r)) return copia(l);
@@ -281,26 +261,10 @@
     return out;
   }
 
-  async function leerRemoto(Y) {
-    const r = await fetch(`${urlSync(Y.archivo)}?ref=${RAMA_SYNC}&t=${Date.now()}`, { headers: ghHeaders(), cache: "no-store" });
-    if (r.status === 404) return null;
-    if (!r.ok) throw new Error(r.status === 401 ? "la clave de GitHub no es válida o venció" : `GitHub respondió ${r.status}`);
-    const j = await r.json();
-    return { sha: j.sha, datos: await descifrar(Y.secreto, atob(String(j.content || "").replace(/\s/g, ""))) };
-  }
-
-  // Devuelve el sha nuevo, o null si el otro dispositivo escribió justo antes.
-  async function escribirRemoto(Y, datos, sha) {
-    const cuerpo = { message: "Presupuestos: sincronización", content: btoa(await cifrar(Y.secreto, datos)), branch: RAMA_SYNC };
-    if (sha) cuerpo.sha = sha;
-    const r = await fetch(urlSync(Y.archivo), { method: "PUT", headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()), body: JSON.stringify(cuerpo) });
-    if (r.status === 409 || r.status === 422) return null;
-    if (!r.ok) throw new Error(r.status === 403 || r.status === 404 ? "la clave no tiene permiso para editar el repositorio viaje-la" : `GitHub respondió ${r.status}`);
-    return (await r.json()).content.sha;
-  }
-
   // Qué persona está elegida queda en cada dispositivo; se comparten los presupuestos y el súper.
+  // La base no guarda listas vacías ni valores nulos: todo pasa por la misma limpieza antes de comparar.
   const paraSync = () => clon({ personas: E.personas, super: E.super });
+  const normalizarSync = (d) => ({ personas: lista(d && d.personas).map(normalizar).filter(Boolean), super: superAlDia(d && d.super ? d.super : null) });
 
   function traerSync(datos) {
     const sel = E.sel;
@@ -314,133 +278,179 @@
     toast("Se actualizó con tu otro dispositivo");
   }
 
-  function programarSync(ms = 2500) {
-    if (!leerSync() || !tokenGH()) return;
-    clearTimeout(timerSync);
-    timerSync = setTimeout(sincronizar, ms);
+  function cargarFirebase() {
+    if (!cargandoFb) {
+      cargandoFb = Promise.all(["firebase-app", "firebase-auth", "firebase-database"].map((m) => import(`${FB_SDK}${m}.js`)))
+        .then(([F, A, Db]) => {
+          const app = F.initializeApp(FB);
+          fb = { A, Db, auth: A.getAuth(app), db: Db.getDatabase(app) };
+          if (usarSimulador()) {
+            A.connectAuthEmulator(fb.auth, "http://127.0.0.1:9099", { disableWarnings: true });
+            Db.connectDatabaseEmulator(fb.db, "127.0.0.1", 9000);
+          }
+          A.onAuthStateChanged(fb.auth, cambioDeCuenta);
+          return fb;
+        })
+        .catch((e) => {
+          cargandoFb = null;
+          throw e;
+        });
+    }
+    return cargandoFb;
   }
 
-  async function sincronizar() {
-    const Y = leerSync();
-    if (!Y || !tokenGH() || !navigator.onLine) return;
-    if (syncando) { otraVez = true; return; }
-    if (document.querySelector("dialog[open]")) { programarSync(4000); return; }
-    syncando = true;
+  function cambioDeCuenta(u) {
+    if (dejarDeEscuchar) { dejarDeEscuchar(); dejarDeEscuchar = null; }
+    refDatos = null;
+    const C = leerCuenta();
+    if (!u) {
+      if (C && C.uid) guardarCuenta(null);
+      pintarSync();
+      return;
+    }
+    if (!C || C.uid !== u.uid) guardarCuenta({ uid: u.uid, nombre: (C && C.nombre) || (P && P.nombre) || "" });
+    refDatos = fb.Db.ref(fb.db, `presupuestos/${u.uid}`);
+    dejarDeEscuchar = fb.Db.onValue(refDatos, (snap) => recibir(snap.val()), anotarError);
+    pintarSync();
+  }
+
+  // Llegó lo que hay en la base: se suma a lo de este dispositivo y, si acá había algo nuevo, se sube.
+  function recibir(valor) {
+    clearTimeout(recibir.t);
+    if (document.querySelector("dialog[open]")) { recibir.t = setTimeout(() => recibir(valor), 2000); return; }
+    const C = leerCuenta();
+    if (!C || !C.uid) return;
+    if (valor) {
+      const remoto = normalizarSync(valor);
+      const local = paraSync();
+      const mezcla = mezclar(C.base, local, remoto);
+      if (!igual(mezcla, local)) traerSync(mezcla);
+      C.base = remoto;
+    }
+    C.ultima = new Date().toISOString();
+    delete C.error;
+    guardarCuenta(C);
+    pintarSync();
+    if (!valor || !igual(paraSync(), C.base)) programarSync(300);
+  }
+
+  function programarSync(ms = 1500) {
+    if (!refDatos) return;
+    clearTimeout(timerSync);
+    timerSync = setTimeout(subir, ms);
+  }
+
+  // Sube lo de este dispositivo mezclado con lo que haya en la base en ese momento; si otro
+  // dispositivo escribió justo antes, Firebase vuelve a pedir la mezcla con lo nuevo.
+  async function subir() {
+    if (!refDatos) return;
+    if (subiendo) { otraVez = true; return; }
+    subiendo = true;
+    const C = leerCuenta() || {};
+    const local = paraSync();
     try {
-      for (let i = 0; i < 4; i++) {
-        const remoto = await leerRemoto(Y);
-        if (remoto) {
-          const mezcla = mezclar(Y.base, paraSync(), remoto.datos);
-          if (!igual(mezcla, paraSync())) traerSync(mezcla);
-        }
+      const res = await fb.Db.runTransaction(refDatos, (actual) => (actual ? mezclar(C.base, local, normalizarSync(actual)) : local), { applyLocally: false });
+      if (res.committed) {
+        const subido = normalizarSync(res.snapshot.val());
         const ahora = paraSync();
-        if (remoto && igual(ahora, remoto.datos)) { Y.sha = remoto.sha; Y.base = remoto.datos; break; }
-        const sha = await escribirRemoto(Y, ahora, remoto && remoto.sha);
-        if (!sha) continue;
-        Y.sha = sha;
-        Y.base = ahora;
-        break;
+        const mezcla = mezclar(local, ahora, subido);
+        if (!igual(mezcla, ahora)) traerSync(mezcla);
+        const C2 = leerCuenta();
+        if (C2 && C2.uid) {
+          C2.base = subido;
+          C2.ultima = new Date().toISOString();
+          delete C2.error;
+          guardarCuenta(C2);
+        }
+        if (!igual(paraSync(), subido)) otraVez = true;
       }
-      Y.ultima = new Date().toISOString();
-      delete Y.error;
     } catch (e) {
-      Y.error = e && e.name === "OperationError" ? "el código no coincide con el de tu otro dispositivo" : (e && e.message) || "sin conexión";
+      anotarError(e);
     } finally {
-      const sigue = leerSync();
-      if (sigue && sigue.secreto === Y.secreto) guardarSync(Y);
-      syncando = false;
+      subiendo = false;
       pintarSync();
       if (otraVez) { otraVez = false; programarSync(500); }
     }
   }
 
-  async function activarSync(boton) {
-    if (!tokenGH()) {
-      const t = ($("#sync-token").value || "").trim();
-      if (!claveValida(t)) { toast("Esa clave no parece de GitHub: empieza con github_pat_"); return; }
-      boton.disabled = true;
-      const ok = await fetch(`https://api.github.com/repos/${REPO}`, { headers: { Authorization: `Bearer ${t}`, Accept: "application/vnd.github+json" } }).then((r) => r.ok).catch(() => false);
-      boton.disabled = false;
-      if (!ok) { toast("GitHub no aceptó esa clave"); return; }
-      try { localStorage.setItem(LS_TOKEN, t); } catch (e) {}
-    }
+  function anotarError(e) {
+    const C = leerCuenta();
+    if (!C || !C.uid) return;
+    C.error = /permission/i.test((e && (e.code || e.message)) || "") ? "volvé a poner tu PIN" : navigator.onLine ? "no se pudo conectar con la base" : "sin conexión, se sincroniza cuando vuelva internet";
+    guardarCuenta(C);
+    pintarSync();
+  }
+
+  async function activarConPin(boton) {
+    const pin = ($("#sync-pin").value || "").trim();
+    if (!/^\d{4,6}$/.test(pin)) { toast("El PIN tiene que ser de 4 a 6 números"); return; }
+    if (!P) return;
+    const nombre = P.nombre;
+    const email = `${slug(nombre)}@viaje-la-26.firebaseapp.com`;
+    const clave = `LA26-${pin}-${slug(nombre)}`;
     boton.disabled = true;
+    guardarCuenta({ nombre });
     try {
-      const r = await fetch(`https://api.github.com/repos/${REPO}/contents/presupuesto/sync?ref=${RAMA_SYNC}&t=${Date.now()}`, { headers: ghHeaders(), cache: "no-store" });
-      const hay = r.ok ? lista(await r.json()).some((f) => /\.json$/.test(f.name)) : false;
-      if (hay && !confirm("Ya activaste la sincronización en otro dispositivo. Para ver lo mismo, en ese tocá «Vincular otro dispositivo» y pegá acá su código.\n\n¿Empezar una sincronización nueva desde este igual?")) return;
+      const { A, auth } = await cargarFirebase();
+      try {
+        await A.signInWithEmailAndPassword(auth, email, clave);
+        toast("Listo: ya ves lo mismo que en tu otro dispositivo");
+      } catch (e) {
+        if (e && e.code === "auth/too-many-requests") throw e;
+        try {
+          await A.createUserWithEmailAndPassword(auth, email, clave);
+          pinNuevo = pin;
+          toast("Activado: en tu otro dispositivo poné el mismo PIN");
+        } catch (e2) {
+          if (e2 && e2.code === "auth/email-already-in-use") {
+            guardarCuenta(null);
+            toast(`Ese PIN no es el de ${nombre}`);
+            return;
+          }
+          throw e2;
+        }
+      }
     } catch (e) {
+      guardarCuenta(null);
+      toast(e && e.code === "auth/too-many-requests" ? "Probaste muchas veces: esperá unos minutos" : navigator.onLine ? "No se pudo activar: probá de nuevo" : "Para activarlo necesitás internet");
     } finally {
       boton.disabled = false;
-    }
-    const secreto = nuevoSecreto();
-    guardarSync({ secreto, archivo: await archivoDe(secreto) });
-    pintarSync();
-    await sincronizar();
-    const Y = leerSync();
-    if (Y && !Y.error) {
-      verCodigo = true;
       pintarSync();
-      toast("Activado: ahora pasale el código a tu otro dispositivo");
     }
   }
 
-  async function vincular(secreto, token) {
-    try { localStorage.setItem(LS_TOKEN, token); } catch (e) {}
-    guardarSync({ secreto, archivo: await archivoDe(secreto) });
-    verCodigo = false;
+  async function salirSync() {
+    if (!confirm("¿Dejar de sincronizar este dispositivo? Lo que tenés acá queda guardado.")) return;
+    try {
+      const { A, auth } = await cargarFirebase();
+      await A.signOut(auth);
+    } catch (e) {}
+    guardarCuenta(null);
+    pinNuevo = "";
     pintarSync();
-    toast("Vinculando…");
-    await sincronizar();
-    const Y = leerSync();
-    toast(Y && !Y.error ? "Listo: ya ves lo mismo que en tu otro dispositivo" : `No se pudo vincular: ${(Y && Y.error) || "sin conexión"}`);
-  }
-
-  function vincularDesdeLink() {
-    const m = /^#vincular=/.test(location.hash) && CODIGO.exec(location.hash);
-    if (!m) return false;
-    history.replaceState(null, "", location.pathname + location.search + "#gastos");
-    ponerVista("gastos");
-    vincular(m[1], m[2]);
-    return true;
+    toast("Este dispositivo ya no se sincroniza");
   }
 
   function pintarSync() {
     const caja = $("#sync-box");
     if (!caja) return;
-    const Y = leerSync(), token = tokenGH();
-    const hora = Y && Y.ultima ? fHora.format(new Date(Y.ultima)) : "";
-    const estado = !Y ? "" : Y.error ? `No se pudo sincronizar: ${Y.error}` : hora ? `Sincronizado con tus dispositivos · ${hora}` : "Sincronizando…";
-    $("#g-sync").innerHTML = Y
-      ? `${ms("devices")}<span class="${Y.error ? "neg" : ""}">${esc(estado)}</span>`
+    const C = leerCuenta();
+    const activo = !!(C && C.uid);
+    const hora = activo && C.ultima ? fHora.format(new Date(C.ultima)) : "";
+    const estado = !activo ? "" : C.error ? `No se pudo sincronizar: ${C.error}` : hora ? `Sincronizado como ${C.nombre || "vos"} · ${hora}` : "Sincronizando…";
+    $("#g-sync").innerHTML = activo
+      ? `${ms("devices")}<span class="${C.error ? "neg" : ""}">${esc(estado)}</span>`
       : `<button type="button" class="link-btn" data-ir-sync>Ver estos gastos también en tu otro dispositivo</button>`;
-    if (Y) {
-      caja.innerHTML = `<p class="sync-estado ${Y.error ? "neg" : ""}">${esc(estado)}</p>
-        <div class="fila-btns">
-          <button type="button" class="btn btn-chico" data-sync="codigo">${ms("devices")}Vincular otro dispositivo</button>
-          <button type="button" class="btn btn-sec btn-chico" data-sync="ahora">Sincronizar ahora</button>
-          <button type="button" class="btn btn-peligro btn-chico" data-sync="quitar">Dejar de sincronizar</button>
-        </div>
-        ${verCodigo ? `<div class="sync-codigo">
-          <p class="sub">En el otro dispositivo abrí Presupuestos, andá a <b>Sincronizar mis dispositivos</b> y pegá este código. <b>No lo mandes al grupo:</b> con él se puede ver y cambiar tu presupuesto.</p>
-          <input class="sync-input" id="sync-mio" type="text" readonly value="${esc(Y.secreto + "." + token)}" aria-label="Código de vinculación">
-          <div class="fila-btns">
-            <button type="button" class="btn btn-sec btn-chico" data-sync="copiar">${ms("content_copy")}Copiar código</button>
-            <button type="button" class="btn btn-sec btn-chico" data-sync="compartir">${ms("share")}Mandar a mi otro dispositivo</button>
-          </div>
-        </div>` : ""}`;
+    if (activo) {
+      caja.innerHTML = `<p class="sync-estado ${C.error ? "neg" : ""}">${esc(estado)}</p>
+        ${pinNuevo ? `<p class="sub">En tu otro dispositivo abrí Presupuestos, elegí <b>${esc(C.nombre || "tu nombre")}</b>, andá a <b>Sincronizar mis dispositivos</b> y poné el mismo PIN: <b>${esc(pinNuevo)}</b>.</p>` : ""}
+        <div class="fila-btns"><button type="button" class="btn btn-peligro btn-chico" data-sync="salir">Dejar de sincronizar acá</button></div>`;
       return;
     }
-    caja.innerHTML = `${token ? "" : `<p class="sub">Usa una clave de GitHub, la misma con la que la agenda publica los cambios. Tocá <b>Crear la clave</b>, elegí el repositorio <b>viaje-la</b>, generala y pegala acá.</p>
-        <input class="sync-input" id="sync-token" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" aria-label="Clave de GitHub">`}
-      <div class="fila-btns">
-        <button type="button" class="btn btn-chico" data-sync="activar">Activar en este dispositivo</button>
-        ${token ? "" : `<a class="btn btn-sec btn-chico" href="${CREAR_CLAVE}" target="_blank" rel="noopener">${ms("open_in_new")}Crear la clave</a>`}
-      </div>
-      <p class="sub">¿Ya lo activaste en otro dispositivo? Pegá acá el código que te muestra:</p>
+    caja.innerHTML = `<p class="sub">Poné el mismo PIN en tu celu y en tu iPad y vas a ver lo mismo en los dos. Se guarda a nombre de <b>${esc(P ? P.nombre : "")}</b> y sin el PIN nadie lo puede ver. La primera vez, inventá uno de 4 números.</p>
       <div class="sync-pegar">
-        <input class="sync-input" id="sync-codigo" type="text" placeholder="Código de vinculación" autocomplete="off" spellcheck="false" aria-label="Código de vinculación">
-        <button type="button" class="btn btn-sec btn-chico" data-sync="vincular">Vincular</button>
+        <input class="sync-input" id="sync-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="PIN de 4 números" aria-label="PIN">
+        <button type="button" class="btn btn-chico" data-sync="activar">Activar</button>
       </div>`;
   }
 
@@ -1409,38 +1419,17 @@
     t.replaceWith(s);
   }, true);
 
-  $("#sync-box").addEventListener("click", async (e) => {
+  $("#sync-box").addEventListener("click", (e) => {
     const b = e.target.closest("[data-sync]");
     if (!b) return;
-    const accion = b.dataset.sync;
-    if (accion === "activar") activarSync(b);
-    else if (accion === "vincular") {
-      const m = CODIGO.exec(($("#sync-codigo").value || "").trim());
-      if (!m) { toast("Ese código no está completo: copialo entero del otro dispositivo"); return; }
-      vincular(m[1], m[2]);
-    } else if (accion === "codigo") {
-      verCodigo = !verCodigo;
-      pintarSync();
-    } else if (accion === "ahora") sincronizar();
-    else if (accion === "quitar") {
-      if (!confirm("¿Dejar de sincronizar este dispositivo? Lo que tenés acá queda guardado.")) return;
-      try { localStorage.removeItem(LS_SYNC); } catch (err) {}
-      verCodigo = false;
-      pintarSync();
-      toast("Este dispositivo ya no se sincroniza");
-    } else if (accion === "copiar") {
-      try { await navigator.clipboard.writeText($("#sync-mio").value); toast("Código copiado: pegalo en tu otro dispositivo"); }
-      catch (err) { $("#sync-mio").select(); toast("Copiá el código que quedó marcado"); }
-    } else if (accion === "compartir") {
-      const Y = leerSync();
-      if (!Y) return;
-      const link = `${location.origin}${location.pathname}#vincular=${Y.secreto}.${tokenGH()}`;
-      if (navigator.share) { try { await navigator.share({ url: link }); } catch (err) {} }
-      else {
-        try { await navigator.clipboard.writeText(link); toast("Link copiado: abrilo en tu otro dispositivo"); }
-        catch (err) { prompt("Copiá el link:", link); }
-      }
-    }
+    if (b.dataset.sync === "activar") activarConPin(b);
+    else if (b.dataset.sync === "salir") salirSync();
+  });
+  $("#sync-box").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || e.target.id !== "sync-pin") return;
+    e.preventDefault();
+    const b = $('#sync-box [data-sync="activar"]');
+    if (b && !b.disabled) activarConPin(b);
   });
 
   $("#g-sync").addEventListener("click", (e) => {
@@ -1451,11 +1440,8 @@
 
   cargar();
   todo();
-  if (!vincularDesdeLink()) sincronizar();
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sincronizar(); });
-  window.addEventListener("focus", () => sincronizar());
-  window.addEventListener("online", () => sincronizar());
-  setInterval(() => { if (document.visibilityState === "visible") sincronizar(); }, 30000);
+  if (leerCuenta()) cargarFirebase().catch(anotarError);
+  window.addEventListener("online", () => { if (leerCuenta() && !fb) cargarFirebase().catch(anotarError); });
 
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
     window.addEventListener("load", () => navigator.serviceWorker.register("../sw.js").catch(() => {}));
