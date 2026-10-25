@@ -66,6 +66,10 @@
     };
   }
 
+  function limpiarApartado(a) {
+    return { id: str(a.id || uid(), 40), monto: Math.round(n0(a.monto) * 100) / 100, nota: str(a.nota, 80), ts: str(a.ts, 40) };
+  }
+
   function limpiarCompra(c) {
     const base = { id: str(c.id || uid(), 40), tienda: str(c.tienda || "otra", 40) };
     if (base.tienda === "otra") base.tiendaNombre = str(c.tiendaNombre, 40);
@@ -109,7 +113,8 @@
       reservas: lista(x.reservas).map(limpiarItem),
       snacks: lista(x.snacks).map(limpiarItem),
       compras: lista(x.compras).map(limpiarCompra),
-      gastos: lista(x.gastos).map(limpiarGasto).filter((g) => g.monto > 0)
+      gastos: lista(x.gastos).map(limpiarGasto).filter((g) => g.monto > 0),
+      apartados: lista(x.apartados).map(limpiarApartado).filter((a) => a.monto > 0)
     };
   }
 
@@ -328,6 +333,9 @@
     : `<span class="foto sig" style="background:${esc(t.color)}">${esc(t.sigla)}</span>`);
 
   const gastado = (p) => (p.gastos || []).reduce((a, g) => a + n0(g.monto), 0);
+  // Plata en reserva: no está gastada, pero tampoco se puede gastar.
+  const apartado = (p) => (p.apartados || []).reduce((a, x) => a + n0(x.monto), 0);
+  const libre = (p) => n0(p.recibo) - gastado(p) - apartado(p);
   const soloFecha = (g) => /^\d{4}-\d{2}-\d{2}$/.test(g.ts || "");
   const fechaDe = (g) => {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(g.ts || "");
@@ -350,10 +358,10 @@
   function pintarPersonas() {
     $("#personas").innerHTML = E.personas.map((p) => {
       const R = calcular(p), sel = P && p.id === P.id;
-      const enMano = n0(p.recibo) - gastado(p);
-      const neg = vista === "gastos" ? enMano < 0 : R.queda < 0;
+      const paraGastar = libre(p);
+      const neg = vista === "gastos" ? paraGastar < 0 : R.queda < 0;
       const txt = vista === "gastos"
-        ? (enMano < 0 ? "se pasó " + fmt(-enMano) : "en mano " + fmt(enMano))
+        ? (paraGastar < 0 ? "se pasó " + fmt(-paraGastar) : "para gastar " + fmt(paraGastar))
         : (R.queda < 0 ? "se pasa " + fmt(-R.queda) : "queda " + fmt(R.queda));
       return `<button class="persona ${sel ? "sel" : ""}" data-persona="${esc(p.id)}" ${sel ? 'aria-current="true"' : ""}>
         <span class="sig" style="background:${esc(p.color)}">${esc(sigla(p.nombre))}</span>
@@ -489,9 +497,9 @@
     $("#queda").classList.toggle("neg", R.queda < 0);
     $("#queda-n").textContent = (R.queda < 0 ? "− " : "") + fmt(Math.abs(R.queda));
     $("#queda-sub").textContent = R.queda < 0 ? `Me paso por ${fmt(-R.queda)}` : `de ${fmt(P.recibo)} · gasto ${fmt(R.gastos)}`;
-    const real = gastado(P);
-    $("#real").innerHTML = real
-      ? `Gastado de verdad: <b>${fmt2(real)}</b> · en mano <b>${fmt(n0(P.recibo) - real)}</b> · <button type="button" class="link-btn" data-vista="gastos">Anotar gasto</button>`
+    const real = gastado(P), res = apartado(P);
+    $("#real").innerHTML = real || res
+      ? `Gastado de verdad: <b>${fmt2(real)}</b> · para gastar <b>${fmt(libre(P))}</b>${res ? ` · en reserva <b>${fmt(res)}</b>` : ""} · <button type="button" class="link-btn" data-vista="gastos">Anotar gasto</button>`
       : `¿Ya gastaste algo? <button type="button" class="link-btn" data-vista="gastos">Anotalo en Gastos</button>`;
     $("#t-reservas").textContent = fmt(R.reservas);
     $("#t-comida").textContent = fmt(R.comida);
@@ -585,7 +593,8 @@
     $("#calc-total").textContent = partes.length > 1 || !calc ? fmt2(tot) : "US$ " + calc.replace(".", ",");
     const b = $("#g-anotar");
     b.disabled = !(tot > 0);
-    b.textContent = tot > 0 ? `Anotar gasto de ${fmt2(tot)}` : "Anotar gasto";
+    b.textContent = tot > 0 ? `Anotar ${fmt2(tot)}` : "Anotar gasto";
+    $("#g-reservar").disabled = !(tot > 0);
   }
 
   function tecla(t) {
@@ -613,17 +622,42 @@
     guardar();
     pintarGastos();
     pintarResumen();
-    toast(`Anotado ${fmt2(tot)} · te quedan ${fmt(n0(P.recibo) - gastado(P))}`);
+    toast(`Anotado ${fmt2(tot)} · te quedan ${fmt(libre(P))}`);
+  }
+
+  function reservar() {
+    const tot = totalCalc();
+    if (!P || !(tot > 0)) return;
+    const nota = $("#g-nota").value.trim().slice(0, 80);
+    P.apartados.push({ id: uid(), monto: tot, nota, ts: new Date().toISOString() });
+    calc = "";
+    $("#g-nota").value = "";
+    guardar();
+    pintarGastos();
+    pintarResumen();
+    toast(`${fmt2(tot)} en reserva · te quedan ${fmt(libre(P))} para gastar`);
   }
 
   function pintarGastos() {
     if (!P) return;
-    const R = calcular(P), g = gastado(P), recibo = n0(P.recibo), queda = recibo - g;
+    const R = calcular(P), g = gastado(P), res = apartado(P), recibo = n0(P.recibo), queda = recibo - g - res;
     $("#g-queda-box").classList.toggle("neg", queda < 0);
-    $("#g-titulo").textContent = queda < 0 ? "Te pasaste por" : "Te quedan";
+    $("#g-titulo").textContent = queda >= 0 ? (res ? "Te quedan para gastar" : "Te quedan") : recibo - g >= 0 ? "Reservaste de más" : "Te pasaste por";
     $("#g-queda").textContent = fmt(Math.abs(queda));
-    $("#g-sub").textContent = recibo ? `de ${fmt(recibo)} · gastaste ${fmt2(g)}` : `Gastaste ${fmt2(g)} · poné en el Plan cuánta plata llevás`;
-    $("#g-barra").style.width = Math.min(100, recibo ? (g / recibo) * 100 : 0) + "%";
+    $("#g-sub").textContent = (recibo ? `de ${fmt(recibo)} · gastaste ${fmt2(g)}` : `Gastaste ${fmt2(g)}`) + (res ? ` · en reserva ${fmt(res)}` : "") + (recibo ? "" : " · poné en el Plan cuánta plata llevás");
+    const pctG = Math.min(100, recibo ? (g / recibo) * 100 : 0);
+    $("#g-barra").style.width = pctG + "%";
+    $("#g-barra-res").style.width = Math.min(100 - pctG, recibo ? (res / recibo) * 100 : 0) + "%";
+    $("#g-res-caja").hidden = !P.apartados.length;
+    $("#g-res-tot").textContent = fmt2(res);
+    $("#g-res-lista").innerHTML = P.apartados.map((x, i) => {
+      const d = fechaDe(x);
+      return `<div class="g-fila">
+          <span class="g-ico res">${ms("savings")}</span>
+          <span class="g-txt"><b>${esc(x.nota || "Reserva")}</b><small>${d ? esc(nombreDia(d)) + " · " : ""}<button type="button" class="link-btn" data-liberar="${i}">Liberar</button> · <button type="button" class="link-btn" data-gastar-res="${i}">Ya lo gasté</button></small></span>
+          <span class="g-monto">${fmt2(x.monto)}</span>
+        </div>`;
+    }).join("");
     const hoy = claveDia(new Date());
     const deHoy = P.gastos.filter((x) => claveDia(fechaDe(x)) === hoy).reduce((a, x) => a + x.monto, 0);
     $("#g-plan").textContent = `Hoy ${fmt2(deHoy)} · plan ${fmt(R.gastos)}${R.gastos ? ` (vas ${Math.round((g / R.gastos) * 100)} %)` : ""}`;
@@ -767,8 +801,8 @@
       `Súper (mi parte): ${fmt(R.miParte)}`,
       `Compras: ${fmt(R.compras)}${R.imp ? " con impuesto" : ""}`
     ];
-    const real = gastado(P);
-    if (real) l.splice(2, 0, `Gastado hasta ahora: ${fmt2(real)} · me quedan ${fmt(n0(P.recibo) - real)} en mano`);
+    const real = gastado(P), res = apartado(P);
+    if (real || res) l.splice(2, 0, `Gastado hasta ahora: ${fmt2(real)} · me quedan ${fmt(libre(P))} para gastar${res ? ` y ${fmt(res)} en reserva` : ""}`);
     const porTienda = [];
     P.compras.forEach((c) => {
       const x = elegido(c);
@@ -893,7 +927,21 @@
     if (!P) return;
     if (d.tecla) tecla(d.tecla);
     else if (b.id === "g-anotar") anotar();
-    else if (d.cat) {
+    else if (b.id === "g-reservar") reservar();
+    else if (d.liberar != null) {
+      const x = P.apartados[+d.liberar];
+      if (x && confirm(`¿Liberar ${fmt2(x.monto)}${x.nota ? ` (${x.nota})` : ""}? Vuelve a lo que te queda para gastar.`)) { P.apartados.splice(+d.liberar, 1); guardar(); pintarGastos(); pintarResumen(); }
+    } else if (d.gastarRes != null) {
+      const x = P.apartados[+d.gastarRes];
+      if (x && confirm(`¿Pasar ${fmt2(x.monto)}${x.nota ? ` (${x.nota})` : ""} a lo que gastaste?`)) {
+        P.apartados.splice(+d.gastarRes, 1);
+        P.gastos.push({ id: uid(), monto: x.monto, cat: "otros", nota: x.nota || "Reserva", ts: new Date().toISOString() });
+        guardar();
+        pintarGastos();
+        pintarResumen();
+        toast(`Pasado a gastos · te quedan ${fmt(libre(P))} para gastar`);
+      }
+    } else if (d.cat) {
       catSel = d.cat;
       E.ultimaCat = catSel;
       guardar();

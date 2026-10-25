@@ -455,8 +455,9 @@ h2 .ms { color: var(--mint); }
 .g-resumen .rotulo { color: inherit; opacity: 0.75; }
 .g-resumen > b { display: block; font-size: 44px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .g-resumen > span { display: block; font-size: 14px; font-weight: 600; margin-top: 2px; }
-.g-barra { height: 8px; border-radius: 4px; background: rgba(0, 0, 0, 0.15); margin-top: 12px; overflow: hidden; }
-.g-barra i { display: block; height: 100%; width: 0; background: rgba(0, 0, 0, 0.55); transition: width 0.25s; }
+.g-barra { display: flex; height: 8px; border-radius: 4px; background: rgba(0, 0, 0, 0.15); margin-top: 12px; overflow: hidden; }
+.g-barra i { display: block; flex: none; height: 100%; width: 0; background: rgba(0, 0, 0, 0.55); transition: width 0.25s; }
+.g-barra i.res { background: repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.45) 0 3px, rgba(0, 0, 0, 0.18) 3px 6px); }
 .g-plan { display: block; margin-top: 8px; font-size: 12px; font-weight: 600; opacity: 0.8; }
 
 .calc { display: flex; flex-direction: column; gap: 10px; }
@@ -509,12 +510,19 @@ h2 .ms { color: var(--mint); }
 .btn-anotar { width: 100%; height: 54px; font-size: 16px; background: var(--mint); border-color: var(--mint); color: var(--mint-ink); }
 .btn-anotar:hover { background: #8ce8bb; }
 .btn-anotar:disabled { opacity: 0.45; cursor: default; }
+.g-acciones { display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+.g-acciones > .btn { min-width: 0; overflow: hidden; }
+.btn-reservar { height: 54px; padding: 0 12px; font-size: 15px; }
+.btn-reservar:disabled { opacity: 0.45; cursor: default; }
+.h2-num { margin-left: auto; font-variant-numeric: tabular-nums; }
+#g-res-lista { margin-top: 6px; }
 
 .g-dia { display: flex; justify-content: space-between; gap: 10px; margin: 14px 0 4px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .g-dia:first-child { margin-top: 6px; }
 .g-fila { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
 .g-ico { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #141414; }
 .g-ico .ms { font-size: 19px; }
+.g-ico.res { background: #8fe3e8; }
 .g-txt { min-width: 0; }
 .g-txt b { display: block; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
 .g-txt small { display: block; font-size: 12px; color: var(--muted); }
@@ -565,7 +573,7 @@ h2 .ms { color: var(--mint); }
   .g-nota { height: 38px; }
   .teclado { gap: 6px; }
   .teclado button { min-height: 50px; font-size: 22px; }
-  .btn-anotar { height: 50px; }
+  .btn-anotar, .btn-reservar { height: 50px; }
   .bienvenida { padding: 0 16px 12px; }
   .wrap {
     grid-template-columns: minmax(0, 1fr);
