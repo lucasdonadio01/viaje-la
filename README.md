@@ -41,7 +41,9 @@ Para que esos cambios les lleguen a todos solos, el celular de quien edita neces
 2. **Repository access:** *Only select repositories* → `viaje-la`. **Permissions → Contents:** *Read and write*. Elegir un vencimiento después del viaje (por ejemplo 30 días) y generar.
 3. En la agenda: **Ajustes → Compartir cambios con el grupo**, pegar la clave y tocar **Activar**. Queda guardada sólo en ese celular; **Desactivar** la borra.
 
-Desde ahí, cada parada o cambio se publica solo a los 5 segundos (o con **Publicar ahora**). Los demás lo ven al abrir o volver a la agenda: si no habían tocado nada se les actualiza solo, y si tenían cambios propios les aparece el aviso de versión nueva. Si se edita `datos.js` a mano en el repositorio, antes hay que traer lo publicado desde la web (`git pull`).
+Desde ahí, cada parada o cambio se publica solo a los 5 segundos (o con **Publicar ahora**). A los demás la agenda se les actualiza sola, sin tocar nada: mientras está abierta se fija cada 30 segundos (y apenas la abren) y, en cuanto GitHub publica el cambio (≈ 1 minuto), lo suma. Lo que cada uno cambió en su celular se mantiene; si alguien cambió lo mismo que se publicó, queda lo publicado. Si dos publican casi a la vez, se juntan los dos cambios. Si se edita `datos.js` a mano en el repositorio, antes hay que traer lo publicado desde la web (`git pull`).
+
+`historial.json` guarda las versiones publicadas hasta el 25/10: le sirve a los celulares que tenían cambios guardados con la página anterior para sumar lo nuevo sin perder lo suyo.
 
 Sin clave, los cambios quedan sólo en ese dispositivo; también se pueden compartir con **Ajustes → Descargar datos.js** y subiendo ese archivo al repositorio.
 
@@ -56,7 +58,7 @@ Sin clave, los cambios quedan sólo en ese dispositivo; también se pueden compa
 - `"llegada": "pie"` o `"llegada": "grupo"` si no van en Uber.
 - `"precioReal": 48` reemplaza la estimación con el precio que mostró la app.
 - `"vehiculo": "UberXXL"` en una actividad (o `"regresoVehiculo"` en el día) cambia el tipo de Uber de ese viaje.
-- Después de editar, subir en 1 el número de `"version"` (arriba de todo) para que los celulares avisen que hay una versión nueva.
+- Después de editar, subir en 1 el número de `"version"` (arriba de todo) para que los celulares tomen solos la versión nueva.
 
 ## Cómo se calcula
 

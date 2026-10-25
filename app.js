@@ -41,7 +41,8 @@
     cerrar: ms("close")
   };
 
-  let S, baseVersion, hayGuardado = false, diaSel = 0, mapa = null, capa = null, lineas = {}, marcas = {}, selKey = null;
+  let S, baseVersion, baseDatos = null, hayGuardado = false, diaSel = 0, mapa = null, capa = null, lineas = {}, marcas = {}, selKey = null;
+  let buscando = false, migrando = false, porAplicar = false;
   let rutasExtra = {}, pendientes = new Set(), planes = [], eligiendo = false;
   let edit = null;
   let carSel = null, carInfo = {}, timerCar = null;
@@ -56,15 +57,15 @@
       S = g.data;
       baseVersion = g.baseVersion || 0;
       hayGuardado = g.pendiente !== false;
-      if ((BASE.version || 0) > baseVersion) {
-        if (hayGuardado) $("#aviso-nueva").hidden = false;
-        else { S = clon(BASE); baseVersion = BASE.version || 0; }
-      }
+      baseDatos = g.base || (hayGuardado ? null : clon(S));
+      completar();
+      if ((BASE.version || 0) > baseVersion && baseDatos && aplicarPublicado()) toast("La agenda se actualizó con los cambios del grupo");
     } else {
       S = clon(BASE);
+      baseDatos = clon(BASE);
       baseVersion = BASE.version || 0;
+      completar();
     }
-    completar();
   }
 
   function completar() {
@@ -74,10 +75,142 @@
     if (BASE.lugares.casa) S.lugares.casa = BASE.lugares.casa;
   }
 
+  function persistir() {
+    try { localStorage.setItem(LS, JSON.stringify({ baseVersion, base: baseDatos, data: S, pendiente: hayGuardado })); } catch (e) {}
+  }
+
   function guardar() {
     hayGuardado = true;
-    try { localStorage.setItem(LS, JSON.stringify({ baseVersion, data: S, pendiente: true })); } catch (e) {}
+    persistir();
     programarPublicacion();
+  }
+
+  const esObj = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
+  const claveDe = (x) => (esObj(x) ? x.id || x.fecha || null : null);
+  const conClave = (x) => Array.isArray(x) && x.length > 0 && x.every(claveDe);
+  const copia = (x) => (x === undefined ? undefined : clon(x));
+
+  function igual(a, b) {
+    if (a === b) return true;
+    if (Array.isArray(a) || Array.isArray(b)) return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => igual(x, b[i]));
+    if (esObj(a) && esObj(b)) return [...new Set([...Object.keys(a), ...Object.keys(b)])].every((k) => igual(a[k], b[k]));
+    return a == null && b == null;
+  }
+
+  function sinRuido(x) {
+    const c = clon(x || {});
+    delete c.version;
+    delete c.rutasExtra;
+    if (c.lugares) delete c.lugares.casa;
+    return c;
+  }
+
+  // b: lo publicado de donde partió este celular · l: lo de este celular · r: lo publicado ahora.
+  // Lo que cambió de un solo lado se conserva; si cambió de los dos lados, queda lo publicado.
+  function mezclar(b, l, r) {
+    if (igual(l, b)) return copia(r);
+    if (igual(r, b) || igual(l, r)) return copia(l);
+    if (Array.isArray(l) && Array.isArray(r) && (conClave(l) || conClave(r))) return mezclarLista(Array.isArray(b) ? b : [], l, r);
+    if (esObj(l) && esObj(r)) {
+      const bb = esObj(b) ? b : {}, out = {};
+      new Set([...Object.keys(r), ...Object.keys(l)]).forEach((k) => {
+        const v = mezclar(bb[k], l[k], r[k]);
+        if (v !== undefined) out[k] = v;
+      });
+      return out;
+    }
+    return copia(r);
+  }
+
+  // Días (por fecha) y paradas (por id): lo agregado en este celular queda después de lo que tenía antes.
+  function mezclarLista(b, l, r) {
+    const porClave = (arr) => new Map(arr.filter(claveDe).map((x) => [claveDe(x), x]));
+    const B = porClave(b), L = porClave(l), R = porClave(r);
+    const out = [];
+    r.forEach((x) => {
+      const k = claveDe(x);
+      if (L.has(k)) out.push(mezclar(B.get(k), L.get(k), x));
+      else if (!B.has(k) || !igual(B.get(k), x)) out.push(copia(x));
+    });
+    l.forEach((x, i) => {
+      const k = claveDe(x);
+      if (!k || R.has(k) || B.has(k)) return;
+      let pos = 0;
+      for (let j = i - 1; j >= 0 && !pos; j--) pos = out.findIndex((y) => claveDe(y) === claveDe(l[j])) + 1;
+      out.splice(pos, 0, copia(x));
+    });
+    return out;
+  }
+
+  function distancia(a, b) {
+    if (igual(a, b)) return 0;
+    const obj = (x) => (conClave(x) ? Object.fromEntries(x.map((y) => [claveDe(y), y])) : Array.isArray(x) && !x.length ? {} : x);
+    a = obj(a);
+    b = obj(b);
+    if (esObj(a) && esObj(b)) return [...new Set([...Object.keys(a), ...Object.keys(b)])].reduce((n, k) => n + distancia(a[k], b[k]), 0);
+    return 1;
+  }
+
+  // Suma a este celular lo último publicado (BASE) sin perder lo que se cambió acá.
+  function aplicarPublicado(publicarDespues = true) {
+    const antes = JSON.stringify(S);
+    S = hayGuardado ? mezclar(baseDatos, S, BASE) : clon(BASE);
+    completar();
+    S.dias.forEach((d) => {
+      const pub = (BASE.dias || []).find((x) => x.fecha === d.fecha);
+      const ids = new Set(((pub && pub.actividades) || []).map((a) => a.id));
+      if ((d.actividades || []).some((a) => !ids.has(a.id))) d.actividades = ordenar(d.actividades);
+    });
+    baseDatos = clon(BASE);
+    baseVersion = BASE.version || 0;
+    hayGuardado = !igual(sinRuido(S), sinRuido(BASE));
+    persistir();
+    if (hayGuardado && publicarDespues) programarPublicacion();
+    return JSON.stringify(S) !== antes;
+  }
+
+  // Celulares con cambios guardados por la página anterior, que no anotaba de qué versión
+  // publicada partían: se elige la más parecida para poder sumarles lo nuevo sin perder lo suyo.
+  async function migrar() {
+    if (baseDatos || migrando || !navigator.onLine) return;
+    migrando = true;
+    try {
+      const r = await fetch("historial.json?v=1");
+      const hist = r.ok ? await r.json() : null;
+      if (!Array.isArray(hist) || baseDatos) return;
+      const yo = sinRuido(S);
+      let mejor = BASE, dMin = distancia(yo, sinRuido(BASE));
+      hist.forEach((v) => {
+        const d = distancia(yo, sinRuido(v));
+        if (d < dMin) { dMin = d; mejor = v; }
+      });
+      baseDatos = clon(mejor);
+      porAplicar = true;
+      actualizarAgenda();
+    } catch (e) {
+    } finally {
+      migrando = false;
+    }
+  }
+
+  const ocupado = () => eligiendo || $("#modal-parada").open || !!(document.activeElement && document.activeElement.matches("#lista input, dialog[open] input, dialog[open] textarea"));
+
+  function actualizarAgenda() {
+    clearTimeout(actualizarAgenda.t);
+    if (!porAplicar) return;
+    if (hayGuardado && !baseDatos) { migrar(); return; }
+    if (ocupado()) { actualizarAgenda.t = setTimeout(actualizarAgenda, 3000); return; }
+    porAplicar = false;
+    if (!aplicarPublicado()) return;
+    render(false);
+    if ($("#modal-presu").open) renderPresu();
+    toast("La agenda se actualizó con los cambios del grupo");
+  }
+
+  function ponerBase(nuevo) {
+    Object.keys(BASE).forEach((k) => delete BASE[k]);
+    Object.assign(BASE, nuevo);
+    Object.assign(rutasExtra, BASE.rutasExtra || {});
   }
 
   const REPO = "lucasdonadio01/viaje-la";
@@ -128,8 +261,9 @@
   async function publicar(manual) {
     const token = tokenGH();
     if (!token) return;
-    if (publicando) { programarPublicacion(); return; }
+    if (publicando || ocupado()) { programarPublicacion(); return; }
     if (!navigator.onLine) { avisoPublicar("Sin conexión: se publica cuando hagas otro cambio con internet", false); return; }
+    if (!baseDatos) { migrar(); programarPublicacion(); return; }
     publicando = true;
     const api = `https://api.github.com/repos/${REPO}/contents/datos.js`;
     const h = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
@@ -138,21 +272,36 @@
       if (!r1.ok) throw new Error(r1.status === 401 ? "la clave de GitHub no es válida o venció" : `GitHub respondió ${r1.status}`);
       const actual = await r1.json();
       const remoto = leerDatos(deBase64(actual.content)) || {};
-      if ((remoto.version || 0) > (baseVersion || 0) && !manual) {
-        avisoPublicar("Hay una versión más nueva publicada: tocá Usar la nueva, o Publicar ahora en Ajustes para pisarla", false);
+      if (remoto.dias && (remoto.version || 0) > (baseVersion || 0)) {
+        ponerBase(remoto);
+        porAplicar = false;
+        if (aplicarPublicado(false)) render(false);
+      }
+      if (!hayGuardado) {
+        if (manual) avisoPublicar("Ya está todo publicado", true);
         return;
       }
       const version = Math.max(remoto.version || 0, BASE.version || 0, baseVersion || 0) + 1;
+      const texto = textoDatos(version);
       const r2 = await fetch(api, {
         method: "PUT",
         headers: Object.assign({ "Content-Type": "application/json" }, h),
-        body: JSON.stringify({ message: `Agenda: cambios desde la web (versión ${version})`, content: aBase64(textoDatos(version)), sha: actual.sha, branch: "main" })
+        body: JSON.stringify({ message: `Agenda: cambios desde la web (versión ${version})`, content: aBase64(texto), sha: actual.sha, branch: "main" })
       });
-      if (!r2.ok) throw new Error(r2.status === 403 || r2.status === 404 ? "la clave no tiene permiso para editar el repositorio" : r2.status === 409 ? "se publicó otra cosa al mismo tiempo, probá de nuevo" : `GitHub respondió ${r2.status}`);
+      if (r2.status === 409) {
+        programarPublicacion();
+        avisoPublicar("Alguien publicó al mismo tiempo: lo vuelvo a intentar", false);
+        return;
+      }
+      if (!r2.ok) throw new Error(r2.status === 403 || r2.status === 404 ? "la clave no tiene permiso para editar el repositorio" : `GitHub respondió ${r2.status}`);
+      const publicado = leerDatos(texto);
+      ponerBase(publicado);
+      baseDatos = clon(publicado);
       baseVersion = version;
-      hayGuardado = false;
-      try { localStorage.setItem(LS, JSON.stringify({ baseVersion, data: S, pendiente: false })); } catch (e) {}
-      avisoPublicar("Publicado para todos: lo ven en un par de minutos", true);
+      hayGuardado = !igual(sinRuido(S), sinRuido(publicado));
+      persistir();
+      if (hayGuardado) programarPublicacion();
+      avisoPublicar("Publicado: en un minuto les aparece solo a todos", true);
     } catch (e) {
       avisoPublicar("No se pudo publicar: " + (e.message || "sin conexión"), false);
     } finally {
@@ -161,25 +310,18 @@
   }
 
   async function buscarVersionNueva() {
-    if (!navigator.onLine) return;
-    let txt = null;
+    if (!navigator.onLine || buscando) return;
+    buscando = true;
     try {
       const r = await fetch(`datos.js?t=${Date.now()}`, { cache: "no-store" });
-      if (r.ok) txt = await r.text();
+      const nuevo = r.ok ? leerDatos(await r.text()) : null;
+      if (nuevo && nuevo.dias && (nuevo.version || 0) > (BASE.version || 0)) ponerBase(nuevo);
     } catch (e) {
-      return;
+    } finally {
+      buscando = false;
     }
-    const nuevo = leerDatos(txt);
-    if (!nuevo || !nuevo.dias || (nuevo.version || 0) <= Math.max(BASE.version || 0, baseVersion || 0)) return;
-    Object.keys(BASE).forEach((k) => delete BASE[k]);
-    Object.assign(BASE, nuevo);
-    Object.assign(rutasExtra, BASE.rutasExtra || {});
-    if (hayGuardado) { $("#aviso-nueva").hidden = false; return; }
-    S = clon(BASE);
-    completar();
-    baseVersion = BASE.version || 0;
-    render(false);
-    toast("La agenda se actualizó con los cambios del grupo");
+    if (hayGuardado && !baseDatos) migrar();
+    else if ((BASE.version || 0) > (baseVersion || 0)) { porAplicar = true; actualizarAgenda(); }
   }
 
   const aMin = (h) => {
@@ -1128,6 +1270,7 @@
     if (!a.lugar) a.aConfirmar = true;
     else if (previo.aConfirmar && previo.lugar === a.lugar && edit.idx != null) a.aConfirmar = true;
     if (previo.precioReal && JSON.stringify(previo.lugar) === JSON.stringify(a.lugar)) a.precioReal = previo.precioReal;
+    if (previo.vehiculo) a.vehiculo = previo.vehiculo;
     if (edit.idx != null) d.actividades[edit.idx] = a;
     else d.actividades.splice(edit.insertar, 0, a);
     d.actividades = ordenar(d.actividades);
@@ -1244,7 +1387,7 @@
         <h3>Compartir cambios con el grupo</h3>
         <div class="ajuste ancho gh">
           ${tokenGH() ? `
-            <p class="gh-txt">Publicación automática activada en este celular: cada parada o cambio que hagas se publica para todos, y en un par de minutos lo ven al abrir la agenda.</p>
+            <p class="gh-txt">Publicación automática activada en este celular: cada parada o cambio que hagas se publica y en un minuto les aparece solo a todos.</p>
             <div class="fila-btns"><button class="btn" data-gh="publicar">${IC.compartir}Publicar ahora</button><button class="btn btn-sec" data-gh="quitar">Desactivar</button></div>
           ` : `
             <p class="gh-txt">Para que lo que cambies acá les llegue a todos, pegá una clave de GitHub con permiso para editar este repositorio. Queda guardada sólo en este celular.</p>
@@ -1401,10 +1544,10 @@
       try { localStorage.removeItem(LS); } catch (e) {}
       S = clon(BASE);
       completar();
+      baseDatos = clon(BASE);
       baseVersion = BASE.version || 0;
       hayGuardado = false;
       $("#modal-ajustes").close();
-      $("#aviso-nueva").hidden = true;
       render(true);
       toast("Itinerario original");
     }
@@ -1622,21 +1765,6 @@
       }
     });
 
-    $("#usar-nueva").addEventListener("click", () => {
-      try { localStorage.removeItem(LS); } catch (e) {}
-      S = clon(BASE);
-      completar();
-      baseVersion = BASE.version || 0;
-      hayGuardado = false;
-      $("#aviso-nueva").hidden = true;
-      render(true);
-    });
-    $("#mantener-mia").addEventListener("click", () => {
-      baseVersion = BASE.version || 0;
-      guardar();
-      $("#aviso-nueva").hidden = true;
-    });
-
     document.addEventListener("keydown", (e) => {
       if (e.target.closest("input, textarea, dialog")) return;
       if (e.key === "ArrowRight") elegirDia(diaSel + 1);
@@ -1651,7 +1779,7 @@
       if (mapa) mapa.invalidateSize();
       if (esMovil() !== eraMovil) { eraMovil = esMovil(); renderMapa(false); }
     });
-    window.addEventListener("online", () => render(false));
+    window.addEventListener("online", () => { render(false); buscarVersionNueva(); });
 
     setInterval(() => {
       renderEstado();
@@ -1699,7 +1827,8 @@
 
   buscarVersionNueva();
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") buscarVersionNueva(); });
-  setInterval(() => { if (document.visibilityState === "visible") buscarVersionNueva(); }, 5 * 60 * 1000);
+  window.addEventListener("focus", buscarVersionNueva);
+  setInterval(() => { if (document.visibilityState === "visible") buscarVersionNueva(); }, 30 * 1000);
 
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

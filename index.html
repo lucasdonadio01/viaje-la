@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&icon_names=add,alarm,attach_money,calendar_month,check_circle,close,directions_bus,directions_car,directions_walk,download,edit,fit_screen,hail,home,info,list,location_on,luggage,map,payments,receipt_long,route,savings,schedule,search,share,tune,warning&display=block">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="estilos.css?v=3">
+<link rel="stylesheet" href="estilos.css?v=4">
 </head>
 <body>
 <div class="app" id="app" data-vista="agenda">
@@ -56,14 +56,6 @@
           <span class="ms" aria-hidden="true">tune</span>
           Ajustes
         </button>
-      </div>
-    </div>
-
-    <div class="aviso-nueva" id="aviso-nueva" hidden>
-      <p>Hay una versión nueva del itinerario publicada. ¿La usás? Se pierden los cambios que hiciste en este dispositivo.</p>
-      <div class="fila-btns">
-        <button class="btn" id="usar-nueva">Usar la nueva</button>
-        <button class="btn btn-sec" id="mantener-mia">Mantener la mía</button>
       </div>
     </div>
 
@@ -215,7 +207,7 @@
       <p>Los tiempos de manejo salen de rutas reales con un factor de tráfico de LA según la hora y el día. Los precios son de <b>UberXL</b> (entran los 5), calibrados con los promedios que publica Uber para LA, más un colchón por tarifa dinámica que podés cambiar.</p>
       <p>Cuando vean el precio real en la app, cárguenlo en <b>Precio real</b> y el presupuesto se actualiza.</p>
       <p>Para sumar algo, tocá <b>+ Parada</b> en un viaje, o el buscador de arriba. <b>De corrido</b> quiere decir que van directo desde lo anterior, sin hora fija.</p>
-      <p>Los cambios se guardan en este dispositivo. Para que los vean todos, usá <b>Ajustes → Descargar datos.js</b> y subí ese archivo al repositorio de GitHub.</p>
+      <p>La agenda se actualiza sola: cuando se publica un cambio, a todos les aparece en un minuto, sin tocar nada, y lo que cada uno cambió en su celular se mantiene. Para que lo que cambiás vos les llegue a los demás, activá <b>Ajustes → Compartir cambios con el grupo</b>.</p>
       <div class="offline-caja">
         <b>Usar sin internet</b>
         <p>La agenda, los horarios y los precios ya quedan guardados. Para tener también el mapa, descargalo una vez con wifi.</p>
@@ -232,6 +224,6 @@
 <script src="datos.js?v=5"></script>
 <script src="rutas.js?v=3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
