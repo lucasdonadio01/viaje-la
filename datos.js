@@ -1,5 +1,5 @@
 window.VIAJE = {
-  "version": 2,
+  "version": 3,
   "titulo": "LA 26",
   "subtitulo": "Agenda LBT FACO · Grupo 1",
   "personas": 5,
@@ -37,7 +37,9 @@ window.VIAJE = {
     "disney": { "nombre": "Disneyland Resort", "direccion": "Harbor Blvd (bajada de Uber), 1313 Disneyland Dr, Anaheim, CA 92802", "lat": 33.8091, "lng": -117.9153, "sigla": "D", "color": "#f7c1dc", "nota": "La bajada de Uber está sobre Harbor Blvd, a 4 min a pie de la entrada." },
     "downtowndisney": { "nombre": "Downtown Disney", "direccion": "1580 S Disneyland Dr, Anaheim, CA 92802", "lat": 33.8090914, "lng": -117.921443, "sigla": "DD", "color": "#c9b6ff" },
     "paramount": { "nombre": "Paramount Pictures", "direccion": "5515 Melrose Ave, Los Angeles, CA 90038", "lat": 34.0836549, "lng": -118.3208, "sigla": "P", "color": "#9ec5ff" },
-    "sony": { "nombre": "Sony Pictures Studios", "direccion": "10202 W Washington Blvd, Culver City, CA 90232", "lat": 34.0198913, "lng": -118.400659, "sigla": "S", "color": "#ffffff" }
+    "sony": { "nombre": "Sony Pictures Studios", "direccion": "10202 W Washington Blvd, Culver City, CA 90232", "lat": 34.0198913, "lng": -118.400659, "sigla": "S", "color": "#ffffff" },
+    "burbank": { "nombre": "Burbank Empire Center · Walmart y Best Buy", "direccion": "1501 N Victory Pl, Burbank, CA 91502", "lat": 34.18851, "lng": -118.32774, "sigla": "BB", "color": "#f5d76e" },
+    "griffith": { "nombre": "Observatorio Griffith", "direccion": "2800 E Observatory Rd, Los Angeles, CA 90027", "lat": 34.11838, "lng": -118.30028, "sigla": "GO", "color": "#c9b6ff" }
   },
   "dias": [
     {
@@ -47,7 +49,10 @@ window.VIAJE = {
       ]
     },
     { "fecha": "2026-10-24", "titulo": "Libre", "actividades": [] },
-    { "fecha": "2026-10-25", "titulo": "Libre", "actividades": [] },
+    { "fecha": "2026-10-25", "titulo": "Compras", "actividades": [
+        { "id": "d25a1", "nombre": "Walmart y Best Buy en Burbank", "hora": "12:00", "finHora": "15:00", "lugar": "burbank", "nota": "Best Buy de 10 a 20 y Walmart de 6 a 23. Pegados al Best Buy: TJ Maxx, Marshalls y Nordstrom Rack." },
+        { "id": "d25a2", "nombre": "Observatorio Griffith", "duracion": 180, "lugar": "griffith", "nota": "Entrada gratis, abre de 10 a 22. Atardecer ≈ 18:10. El Uber deja y levanta pasando la entrada en herradura, frente al césped." }
+      ] },
     {
       "fecha": "2026-10-26", "agenda": 1, "titulo": "Warner · Grammy · AMDA",
       "actividades": [
