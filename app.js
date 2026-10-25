@@ -1392,7 +1392,7 @@
           ` : `
             <p class="gh-txt">Para que lo que cambies acá les llegue a todos, pegá una clave de GitHub con permiso para editar este repositorio. Queda guardada sólo en este celular.</p>
             <input type="password" id="gh-token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
-            <div class="fila-btns"><button class="btn" data-gh="guardar">Activar</button><a class="btn btn-sec" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Crear la clave en GitHub</a></div>
+            <div class="fila-btns"><button class="btn" data-gh="guardar">Activar</button><a class="btn btn-sec" href="https://github.com/settings/personal-access-tokens/new?name=Viaje+LA&amp;description=Agenda+y+presupuestos+del+viaje+a+LA&amp;target_name=lucasdonadio01&amp;expires_in=30&amp;contents=write" target="_blank" rel="noopener">Crear la clave en GitHub</a></div>
           `}
           <small class="gh-estado" id="gh-estado">${esc(ultimaPublicacion)}</small>
         </div>

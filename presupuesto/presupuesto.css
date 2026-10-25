@@ -527,6 +527,19 @@ h2 .ms { color: var(--mint); }
 .g-txt b { display: block; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
 .g-txt small { display: block; font-size: 12px; color: var(--muted); }
 .g-monto { font-weight: 700; font-variant-numeric: tabular-nums; }
+.g-sync { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0; font-size: 12px; color: var(--muted); text-align: center; }
+.g-sync .ms { font-size: 16px; color: var(--mint); }
+.g-sync .neg { color: var(--red); }
+
+#sync-box .sub { margin: 12px 0 6px; }
+.sync-estado { margin: 10px 0; font-size: 13px; font-weight: 600; color: var(--mint); }
+.sync-estado.neg { color: var(--red); }
+.sync-input { width: 100%; min-height: 42px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card); color: var(--text); font-size: 16px; }
+.sync-input:focus { outline: 2px solid rgba(123, 224, 173, 0.6); outline-offset: 0; border-color: transparent; }
+#sync-box > .sync-input, #sync-box > .fila-btns { margin-top: 8px; }
+.sync-codigo { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.sync-pegar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.sync-pegar .btn { height: 42px; }
 
 .tabbar { display: none; }
 
