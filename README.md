@@ -57,6 +57,7 @@ Sin clave, los cambios quedan sólo en ese dispositivo; también se pueden compa
 - `lugar` es una clave de la lista `lugares` (arriba en el mismo archivo) o un lugar nuevo: `{ "nombre": "...", "direccion": "...", "lat": 34.1, "lng": -118.3 }`.
 - Sin `hora` y con `"duracion": 45` es una parada **de corrido** (van directo desde lo anterior).
 - `"llegada": "pie"` o `"llegada": "grupo"` si no van en Uber.
+- `"antes": 30` hace que lleguen 30 minutos antes de la hora (en vez de los 20 de siempre), para las actividades que piden llegar con más tiempo.
 - `"precioReal": 48` reemplaza la estimación con el precio que mostró la app.
 - `"vehiculo": "UberXXL"` en una actividad (o `"regresoVehiculo"` en el día) cambia el tipo de Uber de ese viaje.
 - Después de editar, subir en 1 el número de `"version"` (arriba de todo) para que los celulares tomen solos la versión nueva.

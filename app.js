@@ -518,7 +518,7 @@
       const loc = lugarDe(a.lugar);
       const modo = a.llegada || "uber";
       const fija = !!a.hora;
-      const objetivo = fija ? aMin(a.hora) - colchonDe(modo) : null;
+      const objetivo = fija ? aMin(a.hora) - (a.antes != null ? +a.antes : colchonDe(modo)) : null;
       const desde = prevEnd != null ? prevEnd : 600;
       const t = tramo(d.fecha, prevLoc, loc, modo, fija ? { llegar: objetivo } : { salir: desde }, a.precioReal, a.vehiculo);
       t.key = `${di}-${n++}`;
@@ -1271,6 +1271,7 @@
     else if (previo.aConfirmar && previo.lugar === a.lugar && edit.idx != null) a.aConfirmar = true;
     if (previo.precioReal && JSON.stringify(previo.lugar) === JSON.stringify(a.lugar)) a.precioReal = previo.precioReal;
     if (previo.vehiculo) a.vehiculo = previo.vehiculo;
+    if (previo.antes != null) a.antes = previo.antes;
     if (edit.idx != null) d.actividades[edit.idx] = a;
     else d.actividades.splice(edit.insertar, 0, a);
     d.actividades = ordenar(d.actividades);

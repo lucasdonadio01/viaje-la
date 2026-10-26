@@ -1,5 +1,5 @@
 window.VIAJE = {
-  "version": 3,
+  "version": 4,
   "titulo": "LA 26",
   "subtitulo": "Agenda LBT FACO · Grupo 1",
   "personas": 5,
@@ -39,7 +39,8 @@ window.VIAJE = {
     "paramount": { "nombre": "Paramount Pictures", "direccion": "5515 Melrose Ave, Los Angeles, CA 90038", "lat": 34.0836549, "lng": -118.3208, "sigla": "P", "color": "#9ec5ff" },
     "sony": { "nombre": "Sony Pictures Studios", "direccion": "10202 W Washington Blvd, Culver City, CA 90232", "lat": 34.0198913, "lng": -118.400659, "sigla": "S", "color": "#ffffff" },
     "burbank": { "nombre": "Burbank Empire Center · Walmart y Best Buy", "direccion": "1501 N Victory Pl, Burbank, CA 91502", "lat": 34.18851, "lng": -118.32774, "sigla": "BB", "color": "#f5d76e" },
-    "griffith": { "nombre": "Observatorio Griffith", "direccion": "2800 E Observatory Rd, Los Angeles, CA 90027", "lat": 34.11838, "lng": -118.30028, "sigla": "GO", "color": "#c9b6ff" }
+    "griffith": { "nombre": "Observatorio Griffith", "direccion": "2800 E Observatory Rd, Los Angeles, CA 90027", "lat": 34.11838, "lng": -118.30028, "sigla": "GO", "color": "#c9b6ff" },
+    "hardrock": { "nombre": "Hard Rock Cafe Hollywood", "direccion": "6801 Hollywood Blvd Suite 105, Los Angeles, CA 90028", "lat": 34.1026902, "lng": -118.3404676, "sigla": "HR", "color": "#ff9b8f" }
   },
   "dias": [
     {
@@ -54,50 +55,49 @@ window.VIAJE = {
         { "id": "d25a2", "nombre": "Observatorio Griffith", "duracion": 180, "lugar": "griffith", "nota": "Entrada gratis, abre de 10 a 22. Atardecer ≈ 18:10. El Uber deja y levanta pasando la entrada en herradura, frente al césped." }
       ] },
     {
-      "fecha": "2026-10-26", "agenda": 1, "titulo": "Warner · Grammy · AMDA",
+      "fecha": "2026-10-26", "agenda": 1, "titulo": "Warner · Grammy · Masterclass",
       "actividades": [
-        { "id": "d1a1", "nombre": "Warner Bros Studio Tour VIP", "hora": "09:30", "finHora": "12:30", "lugar": "warner" },
-        { "id": "d1a2", "nombre": "Grammy Museum", "hora": "15:00", "finHora": "16:15", "lugar": "grammy" },
-        { "id": "d1a3", "nombre": "Recorrido Chinatown", "hora": "16:30", "finHora": "17:00", "lugar": "chinatown", "llegada": "grupo", "nota": "Termina en Chinatown; de ahí sale el Uber a AMDA." },
-        { "id": "d1a4", "nombre": "Visit to AMDA University + Workshop", "hora": "18:00", "finHora": "20:30", "lugar": "amda" }
+        { "id": "d1a1", "nombre": "Warner Bros Studio Tour VIP", "hora": "09:30", "finHora": "13:30", "antes": 30, "lugar": "warner", "nota": "Studio Tour Plus: llegar 09:00, el tour sale 09:30 en punto. Llevar pasaporte. Incluye snacks en el Deluxe Lounge y el almuerzo en Central Perk. Se pueden sacar fotos, pero no filmar." },
+        { "id": "d1a2", "nombre": "Grammy Museum", "hora": "15:00", "finHora": "16:30", "lugar": "grammy", "nota": "Tour guiado de 60 min y después recorrido libre (60 a 90 min en total). Se entra por Figueroa St, al lado de Fleming's Steakhouse." },
+        { "id": "d1a3", "nombre": "Recorrido Chinatown", "duracion": 30, "lugar": "chinatown", "llegada": "grupo", "nota": "Después del Grammy, con el grupo. De ahí sale el Uber a la masterclass." },
+        { "id": "d1a4", "nombre": "Masterclass · Worldbuilding con Nacho Trossero", "hora": "18:00", "finHora": "20:00", "lugar": null, "aConfirmar": true, "nota": "La agenda nueva no dice dónde es (antes figuraba la visita a AMDA). La hora de fin es aproximada." }
       ]
     },
     {
       "fecha": "2026-10-27", "agenda": 2, "titulo": "Walk of Fame · Workshop · Tommy",
       "actividades": [
-        { "id": "d2a1", "nombre": "Walk of Fame + Dolby Theatre Studio Tour", "hora": "09:00", "finHora": "11:30", "lugar": "dolby" },
+        { "id": "d2a1", "nombre": "Walk of Fame + Dolby Theatre Studio Tour", "hora": "09:00", "finHora": "11:00", "lugar": "dolby", "nota": "Dolby: ir directo al Nivel 2 de la entrada principal; los guías tienen las entradas. El grupo se divide en dos: el 1.º entra a las 10:00 y el 2.º a las 10:15. Tour de 30 min, en inglés." },
         { "id": "d2a2", "nombre": "Workshop con especialista de la industria", "hora": "14:00", "finHora": "17:00", "lugar": null, "aConfirmar": true, "nota": "A confirmar con Campanella." },
-        { "id": "d2a3", "nombre": "Broadway on tour · The Who's Tommy", "hora": "19:30", "finHora": "22:15", "lugar": "pantages", "nota": "Función 19:30 en el Hollywood Pantages." }
+        { "id": "d2a3", "nombre": "Broadway on tour · The Who's Tommy", "hora": "19:30", "finHora": "22:15", "antes": 30, "lugar": "pantages", "nota": "La función empieza 19:30 en punto en el Hollywood Pantages: estar a las 19:00. Cada uno lleva su entrada, donde figura el asiento." }
       ]
     },
     {
       "fecha": "2026-10-28", "agenda": 3, "titulo": "Universal · NBA",
       "actividades": [
-        { "id": "d3a1", "nombre": "Universal Studios + Studio Tour + CityWalk", "hora": "07:00", "finHora": "16:30", "lugar": "universal" },
-        { "id": "d3a2", "nombre": "NBA · Clippers vs. Lakers", "hora": "18:30", "finHora": "22:00", "lugar": "intuit", "nota": "El partido empieza 19:30. A la salida suele haber tarifa dinámica: esperar 20–30 min o caminar un par de cuadras ayuda." }
+        { "id": "d3a1", "nombre": "Universal Studios + Studio Tour + CityWalk", "hora": "10:00", "finHora": "15:30", "antes": 40, "lugar": "universal", "nota": "Entrada programada a las 10:00: llegar 30 a 45 min antes por los controles. Incluye el Studio Tour en tranvía (≈ 60 min). A las 17:00 hay que estar en el Intuit Dome." },
+        { "id": "d3a2", "nombre": "NBA · Clippers vs. Lakers", "hora": "17:00", "finHora": "22:00", "antes": 10, "lugar": "intuit", "nota": "Check-in 17:00 cerca del Modelo Bar (a la izquierda de la plaza). La experiencia Watch the Stars arranca 17:30 y no dejan entrar después de las 17:45. Partido 19:30. Cada adulto con la app Intuit Dome + Clippers y su entrada. No se puede ir con ropa de los Lakers. A la salida suele haber tarifa dinámica: esperar 20–30 min o caminar un par de cuadras ayuda." }
       ]
     },
     {
-      "fecha": "2026-10-29", "agenda": 4, "titulo": "Disney Tech · Amazon · Masterclass",
+      "fecha": "2026-10-29", "agenda": 4, "titulo": "Disney Tech · Workshop · Noche libre",
       "actividades": [
-        { "id": "d4a1", "nombre": "Technology of Disney Parks Workshop", "hora": "07:30", "finHora": "14:00", "lugar": "disney" },
-        { "id": "d4a2", "nombre": "Workshop con especialistas de Amazon Prime y otras plataformas", "hora": "16:00", "finHora": "18:00", "lugar": null, "aConfirmar": true },
-        { "id": "d4a3", "nombre": "Masterclass y posible noche libre", "hora": "20:00", "finHora": "22:00", "lugar": null, "aConfirmar": true, "nota": "La agenda dice \"noche\": la hora es aproximada." }
+        { "id": "d4a1", "nombre": "Technology of Disney Parks Workshop", "hora": "10:00", "finHora": "13:30", "antes": 30, "lugar": "disney", "nota": "El workshop es de 10:30 a 13:30 en Matterhorn & South (a la derecha del castillo, entre el Matterhorn y el castillo). Contacto del día: +1 (714) 781-4132 (decir con qué grupo están)." },
+        { "id": "d4a2", "nombre": "Workshop · Trabajo de filmación", "hora": "16:00", "finHora": "18:00", "lugar": null, "aConfirmar": true, "nota": "La agenda no dice dónde es. La hora de fin es aproximada. A la noche, libre." }
       ]
     },
     {
-      "fecha": "2026-10-30", "agenda": 5, "titulo": "Paramount · Sony · Cena",
+      "fecha": "2026-10-30", "agenda": 5, "titulo": "Paramount · Sony · Hard Rock",
       "actividades": [
-        { "id": "d5a1", "nombre": "Paramount Studios VIP Tour", "hora": "08:30", "finHora": "13:00", "lugar": "paramount", "llegada": "pie", "nota": "Queda a 16 min caminando de la casa." },
-        { "id": "d5a2", "nombre": "Sony Studio Tour", "hora": "15:00", "finHora": "17:30", "lugar": "sony" },
-        { "id": "d5a3", "nombre": "Cena grupal", "hora": "20:30", "finHora": "22:30", "lugar": null, "aConfirmar": true }
+        { "id": "d5a1", "nombre": "Paramount Studios VIP Tour", "hora": "09:00", "finHora": "13:30", "lugar": "paramount", "llegada": "pie", "nota": "Queda a 16 min caminando de la casa. Tour VIP de 4,5 h con almuerzo buffet, foto grupal, pósters y 15 % de descuento en la tienda." },
+        { "id": "d5a2", "nombre": "Sony Studio Tour", "hora": "15:00", "finHora": "17:00", "antes": 30, "lugar": "sony", "nota": "Llegar 14:30. Tour a pie de 2 h por el estudio, con el Sony Museum y la tienda. Calzado cómodo." },
+        { "id": "d5a3", "nombre": "Cena grupal · Hard Rock Cafe", "hora": "20:00", "finHora": "22:00", "lugar": "hardrock", "nota": "Reserva confirmada a las 20:00. Menú Silver: entrada, plato principal, postre y bebida." }
       ]
     },
     {
       "fecha": "2026-10-31", "agenda": 6, "titulo": "Disney · Halloween",
       "actividades": [
-        { "id": "d6a1", "nombre": "Immersive Storytelling Disney Workshop", "hora": "07:30", "finHora": "11:30", "lugar": "disney", "nota": "En Disney California Adventure Park." },
-        { "id": "d6a2", "nombre": "Disney Theme Parks", "hora": "12:00", "finHora": "21:00", "lugar": "disney" },
+        { "id": "d6a1", "nombre": "Immersive Storytelling Disney Workshop", "hora": "09:30", "finHora": "12:30", "lugar": "disney", "nota": "El workshop es de 10:00 a 12:30, a la derecha de la entrada principal de Disney California Adventure." },
+        { "id": "d6a2", "nombre": "Disney Theme Parks", "hora": "12:30", "finHora": "21:00", "lugar": "disney", "nota": "La agenda dice 12:00, pero el workshop termina 12:30." },
         { "id": "d6a3", "nombre": "Downtown Disney", "duracion": 90, "lugar": "downtowndisney", "llegada": "pie", "nota": "Sábado de Halloween a la noche: esperen tarifa dinámica alta para la vuelta." }
       ]
     },
