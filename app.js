@@ -1,6 +1,7 @@
 (() => {
   const BASE = window.VIAJE;
   const RUTAS = window.RUTAS || {};
+  const METRO = window.METRO || null;
   const LS = "viajeLA26";
   const TILE_BASE = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
   const TILE_REF = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}";
@@ -38,7 +39,8 @@
     valija: ms("luggage"),
     lista: ms("list"),
     ahorro: ms("savings"),
-    cerrar: ms("close")
+    cerrar: ms("close"),
+    subte: ms("subway")
   };
 
   let S, baseVersion, baseDatos = null, hayGuardado = false, diaSel = 0, mapa = null, capa = null, lineas = {}, marcas = {}, selKey = null;
@@ -46,6 +48,7 @@
   let rutasExtra = {}, pendientes = new Set(), planes = [], eligiendo = false;
   let edit = null;
   let carSel = null, carInfo = {}, timerCar = null;
+  let subte = { on: true, ocultas: [] }, capaSubte = null, casaSubte = null;
   const esMovil = () => window.innerWidth < 900;
 
   function cargar() {
@@ -922,7 +925,135 @@
       if (actN) g.items.filter((x) => x.tipo === "act").forEach((x) => (marcas["a" + x.idx] = { m, g, k }));
     });
     resaltar();
+    ponerCasaSubte();
     if (encuadrar) encuadrarDia();
+  }
+
+  // Subte: líneas de Metro (metro.js), prendidas o apagadas desde el mismo mapa.
+  function caminatasCasa() {
+    const casa = lugarDe("casa");
+    if (!METRO || !casa || distM(casa, { lat: METRO.desde[0], lng: METRO.desde[1] }) > 150) return [];
+    return METRO.aPie;
+  }
+
+  const lineaSubte = (l) => METRO.lineas.find((x) => x.l === l);
+
+  function iniciarSubte() {
+    if (!METRO) return;
+    try { Object.assign(subte, JSON.parse(localStorage.getItem(LS + ":subte") || "{}")); } catch (e) {}
+    if (!Array.isArray(subte.ocultas)) subte.ocultas = [];
+    mapa.createPane("subte").style.zIndex = 390;
+    mapa.createPane("subte-est").style.zIndex = 590;
+    capaSubte = L.layerGroup([], { attribution: "Subte: LA Metro" });
+    const btn = $("#btn-subte");
+    btn.hidden = false;
+    btn.addEventListener("click", () => {
+      subte.on = !subte.on;
+      guardarSubte();
+      pintarSubte();
+    });
+    $("#subte-ley").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-linea]");
+      if (b) {
+        const l = b.dataset.linea;
+        subte.ocultas = subte.ocultas.includes(l) ? subte.ocultas.filter((x) => x !== l) : subte.ocultas.concat(l);
+        guardarSubte();
+        pintarSubte();
+      } else if (e.target.closest("#btn-subte-casa")) verCasaSubte();
+    });
+    pintarSubte();
+  }
+
+  function guardarSubte() {
+    try { localStorage.setItem(LS + ":subte", JSON.stringify(subte)); } catch (e) {}
+  }
+
+  function pintarSubte() {
+    const ley = $("#subte-ley");
+    $("#btn-subte").setAttribute("aria-pressed", String(subte.on));
+    ley.hidden = !subte.on;
+    capaSubte.clearLayers();
+    if (!subte.on) {
+      capaSubte.remove();
+      ponerCasaSubte();
+      return;
+    }
+    capaSubte.addTo(mapa);
+    const ver = (l) => !subte.ocultas.includes(l);
+    const cerca = caminatasCasa();
+    METRO.lineas.forEach((ln) => {
+      if (!ver(ln.l)) return;
+      ln.tramos.forEach((t) => {
+        // Donde corre pegada a otra línea va punteada, para que se vean los dos colores.
+        const encima = !!t.con && t.con.some(ver);
+        L.polyline(t.p, { pane: "subte", color: ln.color, weight: 4, opacity: 0.9, lineJoin: "round", lineCap: encima ? "butt" : "round", dashArray: encima ? "10 10" : null })
+          .on("click", (e) => { if (!eligiendo) abrirPopSubte(e.latlng, popLinea(ln)); })
+          .addTo(capaSubte);
+      });
+    });
+    cerca.forEach((c) => {
+      const l = METRO.estaciones[c.est].l.find(ver);
+      if (l) L.polyline(c.p, { pane: "subte", color: lineaSubte(l).color, weight: 3, opacity: 0.9, dashArray: "1 7", lineCap: "round", interactive: false }).addTo(capaSubte);
+    });
+    METRO.estaciones.forEach((e, i) => {
+      const ls = e.l.filter(ver);
+      if (!ls.length) return;
+      const c = cerca.find((x) => x.est === i);
+      const multi = ls.length > 1;
+      const m = L.marker([e.lat, e.lng], {
+        pane: "subte-est",
+        keyboard: false,
+        icon: L.divIcon({
+          className: "",
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+          html: `<div class="est${multi ? " multi" : ""}${c ? " desde-casa" : ""}"><i${multi ? "" : ` style="border-color:${lineaSubte(ls[0]).color}"`}></i><span>${esc(e.n)}${c ? ` · ${dur(c.min)} a pie` : ""}</span></div>`
+        })
+      });
+      m.on("click", () => {
+        if (eligiendo) terminarEleccionMapa(m.getLatLng());
+        else abrirPopSubte(m.getLatLng(), popEst(e, c));
+      });
+      m.addTo(capaSubte);
+    });
+    const c0 = cerca[0], e0 = c0 && METRO.estaciones[c0.est];
+    ley.innerHTML = `<div class="ley-lineas">${METRO.lineas.map((ln) => `<button type="button" data-linea="${ln.l}" aria-pressed="${ver(ln.l)}" title="Línea ${ln.l}: ${esc(ln.de)} – ${esc(ln.a)}" style="--c:${ln.color};--t:${ln.texto}">${ln.l}</button>`).join("")}</div>
+      ${e0 ? `<button type="button" class="ley-casa" id="btn-subte-casa">${IC.casa}<span>${esc(e0.n)} · ${dur(c0.min)} a pie</span></button>` : ""}`;
+    ponerCasaSubte();
+  }
+
+  // Si el día no pasa por la casa, la marca igual para ubicarse respecto del subte.
+  function ponerCasaSubte() {
+    if (casaSubte) { casaSubte.remove(); casaSubte = null; }
+    const casa = lugarDe("casa");
+    if (!METRO || !mapa || !subte.on || !casa || marcas.casa) return;
+    casaSubte = L.marker([casa.lat, casa.lng], { icon: iconoMarca(casa, `${IC.casa}Casa`, false), keyboard: false }).addTo(mapa);
+  }
+
+  function abrirPopSubte(latlng, html) {
+    L.popup({ maxWidth: 300, minWidth: 220, autoPanPadding: [40, 40], offset: [0, -4] }).setLatLng(latlng).setContent(html).openOn(mapa);
+  }
+
+  const insignia = (l) => { const ln = lineaSubte(l); return `<span class="ins" style="background:${ln.color};color:${ln.texto}">${l}</span>`; };
+
+  const popLinea = (ln) => `<div class="pop">
+      <div class="pop-cab"><span class="sig" style="background:${ln.color};color:${ln.texto}">${ln.l}</span><div><b>Línea ${ln.l} del Metro</b><small>${esc(ln.de)} – ${esc(ln.a)}</small></div></div>
+    </div>`;
+
+  function popEst(e, c) {
+    return `<div class="pop">
+      <div class="pop-cab"><span class="sig" style="background:#f4f4f4">${IC.subte}</span><div><b>${esc(e.n)}</b><small class="ins-fila">${e.l.map(insignia).join("")}</small></div></div>
+      ${c ? `<div class="pop-pills"><span>${IC.casa}Desde casa</span><span>${IC.pie}${dur(c.min)} · ${km(c.m)}</span></div>` : ""}
+    </div>`;
+  }
+
+  function verCasaSubte() {
+    const casa = lugarDe("casa"), cerca = caminatasCasa();
+    if (!casa || !cerca.length) return;
+    const b = L.latLngBounds([[casa.lat, casa.lng]]);
+    cerca.forEach((c) => c.p.forEach((p) => b.extend(p)));
+    const ancho = window.innerWidth >= 900;
+    mapa.fitBounds(b, { paddingTopLeft: [40, 140], paddingBottomRight: [40, ancho ? 40 : ($("#carrusel").offsetHeight || 0) + 30], maxZoom: 15 });
   }
 
   function encuadrarDia() {
@@ -1803,9 +1934,15 @@
     mapa.attributionControl.setPrefix(false);
     capa = L.layerGroup().addTo(mapa);
     mapa.on("click", (e) => { if (eligiendo) terminarEleccionMapa(e.latlng); });
-    const zoomClase = () => $("#mapa").classList.toggle("lejos", mapa.getZoom() < 12);
+    const zoomClase = () => {
+      const z = mapa.getZoom(), el = $("#mapa");
+      el.classList.toggle("lejos", z < 12);
+      el.classList.toggle("medio", z >= 13);
+      el.classList.toggle("cerca", z >= 15);
+    };
     mapa.on("zoomend", zoomClase);
     zoomClase();
+    iniciarSubte();
     $("#mapa").addEventListener("click", (e) => {
       const b = e.target.closest("[data-pop-ver]");
       if (b) { mapa.closePopup(); irAAct(+b.dataset.popVer); }

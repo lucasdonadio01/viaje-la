@@ -1,7 +1,7 @@
-const V = "la26-v18";
+const V = "la26-v19";
 const TILES = "la26-tiles";
 const APP = [
-  "./", "index.html", "estilos.css", "app.js", "datos.js", "rutas.js", "manifest.webmanifest", "icono.svg",
+  "./", "index.html", "estilos.css", "app.js", "datos.js", "rutas.js", "metro.js", "manifest.webmanifest", "icono.svg",
   "presupuesto/", "presupuesto/presupuesto.css", "presupuesto/presupuesto.js", "presupuesto/datos.js"
 ];
 const CDN = [

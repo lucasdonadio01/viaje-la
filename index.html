@@ -13,9 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&icon_names=add,alarm,attach_money,calendar_month,check_circle,close,directions_bus,directions_car,directions_walk,download,edit,fit_screen,hail,home,info,list,location_on,luggage,map,payments,receipt_long,route,savings,schedule,search,share,tune,warning&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&icon_names=add,alarm,attach_money,calendar_month,check_circle,close,directions_bus,directions_car,directions_walk,download,edit,fit_screen,hail,home,info,list,location_on,luggage,map,payments,receipt_long,route,savings,schedule,search,share,subway,tune,warning&display=block">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="estilos.css?v=4">
+<link rel="stylesheet" href="estilos.css?v=5">
 </head>
 <body>
 <div class="app" id="app" data-vista="agenda">
@@ -80,8 +80,10 @@
     <div id="mapa" class="mapa"></div>
     <div class="mapa-sin" id="mapa-sin" hidden>El mapa necesita conexión la primera vez. La agenda y los precios funcionan igual.</div>
     <div class="mapa-acciones">
+      <button class="chip chip-mapa" id="btn-subte" aria-pressed="true" hidden><span class="ms" aria-hidden="true">subway</span>Subte</button>
       <button class="chip chip-mapa" id="btn-encuadrar"><span class="ms" aria-hidden="true">fit_screen</span>Ver el día entero</button>
       <a class="btn btn-mapa solo-desk" href="presupuesto/"><span class="ms" aria-hidden="true">savings</span>Presupuestos</a>
+      <div class="subte-ley" id="subte-ley" hidden></div>
     </div>
     <div class="carrusel" id="carrusel" aria-label="Actividades del día"></div>
   </main>
@@ -223,7 +225,8 @@
 
 <script src="datos.js?v=6"></script>
 <script src="rutas.js?v=4"></script>
+<script src="metro.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>
