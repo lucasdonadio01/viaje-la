@@ -126,7 +126,9 @@
     const est = conAgenda ? uberAgenda() : null;
     const uber = p.reservas.find((r) => r.id === "uber");
     if (est && uber) uber.precio = Math.ceil(est / 10) * 10;
-    return normalizar(p);
+    const n = normalizar(p);
+    if (n) Object.values(datos.contar || {}).forEach((c) => contar(n, c));
+    return n;
   }
 
   const mismoNombre = (a, b) => {
@@ -153,8 +155,26 @@
         p[k].push(k === "compras" ? limpiarCompra(it) : k === "gastos" ? limpiarGasto(it) : limpiarItem(it));
       });
     });
+    const cuentas = (seed && seed.contar) || {};
+    Object.keys(cuentas).forEach((v) => { if (+v > p.version) contar(p, cuentas[v]); });
     p.version = actual;
     return true;
+  }
+
+  // Plata contada a mano: lo apartado queda como lo dijo y lo que faltaba anotar hasta esa hora
+  // entra como un gasto, así lo que queda para gastar da lo contado. Si sobraba, sube lo que lleva.
+  function contar(p, c) {
+    const hasta = Date.parse(c.ts);
+    p.apartados = lista(c.apartados).map(limpiarApartado);
+    p.gastos = p.gastos.filter((g) => g.id !== c.id);
+    const antes = p.gastos.reduce((a, g) => {
+      const d = fechaDe(g);
+      return a + (!d || d.getTime() <= hasta ? g.monto : 0);
+    }, 0);
+    const res = p.apartados.reduce((a, x) => a + x.monto, 0);
+    const falta = Math.round((n0(p.recibo) - antes - res - n0(c.libre)) * 100) / 100;
+    if (falta > 0) p.gastos.push(limpiarGasto({ id: c.id, monto: falta, cat: "otros", nota: c.nota, ts: c.fecha }));
+    else p.recibo = n0(p.recibo) - falta;
   }
 
   function superAlDia(guardado) {

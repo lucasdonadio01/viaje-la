@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 5,
+  "version": 6,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -42,6 +42,18 @@ window.PRESUPUESTO = {
       "gastos": [
         { "id": "g-2410-1", "desde": 4, "monto": 37, "cat": "otros", "nota": "", "ts": "2026-10-24" }
       ],
+      "contar": {
+        "6": {
+          "ts": "2026-10-30T07:19:00Z",
+          "libre": 1370,
+          "apartados": [
+            { "id": "kindle-zapatillas", "monto": 700, "nota": "Kindle y zapatillas", "ts": "2026-10-30T07:19:00Z" }
+          ],
+          "id": "sin-anotar-2910",
+          "nota": "Gastos sin anotar hasta el 29/10",
+          "fecha": "2026-10-29"
+        }
+      },
       "compras": [
         { "id": "pocket", "tienda": "bestbuy", "grupo": "DJI Osmo Pocket 3", "sel": null, "opciones": [
           { "id": "p1", "nombre": "Pocket 3 sola + microSD 128 GB", "nota": "US$ 395 + SanDisk Extreme US$ 42,98", "precio": 437.98, "img": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6560/6560933_rd.jpg;maxHeight=200;maxWidth=200?format=webp" },
