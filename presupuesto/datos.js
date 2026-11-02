@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 9,
+  "version": 10,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -38,7 +38,7 @@ window.PRESUPUESTO = {
       "color": "#9ec5ff",
       "recibo": 4400,
       "poner": { "4": { "recibo": 4400 } },
-      "quitados": { "samba": 3, "running-h": 3, "running-m": 3, "airpods": 5, "vinilo": 5, "oneblade": 5, "airpods5": 5, "watch12": 5, "lipinjection": 5, "rhode": 5 },
+      "quitados": { "samba": 3, "running-h": 3, "running-m": 3, "airpods": 5, "vinilo": 5, "oneblade": 5, "airpods5": 5, "watch12": 5, "lipinjection": 5, "rhode": 5, "running12": 10, "samba-negra": 10, "spiritain": 10 },
       "gastos": [
         { "id": "g-2410-1", "desde": 4, "monto": 37, "cat": "otros", "nota": "", "ts": "2026-10-24" }
       ],
@@ -88,6 +88,18 @@ window.PRESUPUESTO = {
           "id": "uber-60-0111",
           "nota": "Fondo de Uber (US$ 60) y gastos sin anotar",
           "fecha": "2026-11-01"
+        },
+        "10": {
+          "ts": "2026-11-01T23:58:00Z",
+          "libre": 1246,
+          "apartados": [
+            { "id": "kindle", "monto": 221, "nota": "Kindle Paperwhite 16 GB (US$ 199,99 + impuesto)", "ts": "2026-10-30T07:19:00Z" },
+            { "id": "pozo-uber-0111", "monto": 85, "nota": "Pozo de Uber que falta poner: Disney y LAX", "ts": "2026-11-01T22:38:00Z" },
+            { "id": "comida-0111", "monto": 180, "nota": "Comida hasta el 5/11 (US$ 20 por comida)", "ts": "2026-11-01T22:38:00Z" }
+          ],
+          "id": "uber-60-0111",
+          "nota": "Fondo de Uber (US$ 60) y gastos sin anotar",
+          "fecha": "2026-11-01"
         }
       },
       "compras": [
@@ -106,10 +118,7 @@ window.PRESUPUESTO = {
         { "id": "rtx", "tienda": "bestbuy", "nombre": "Placa de video RTX 5070 12 GB", "nota": "Tu tope. La más barata que vi hoy en Best Buy: MSI Gaming Trio OC US$ 879,99 · Founders Edition US$ 549 si hay stock", "precio": 800, "on": false, "alerta": true, "aviso": "La RTX 5070 a US$ 800 está en el rango del mercado (promedio ≈ US$ 890; hoy la más barata en Best Buy es la MSI a US$ 879,99). Con impuesto, US$ 800 son ≈ US$ 882. Si aparece la Founders Edition a US$ 549, te ahorrás unos US$ 275.", "img": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/5a16cc23-ca60-45a9-a35a-50094ca7c1e0.jpg;maxHeight=200;maxWidth=200?format=webp" },
         { "id": "action", "tienda": "bestbuy", "nombre": "DJI Osmo Action 6 Adventure Combo + microSD 64 GB", "nota": "Bundle de Best Buy: mismo precio que el combo solo (US$ 479) y suma memoria y vincha", "precio": 479, "on": false, "img": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/27684063-0b8f-469c-8d6a-5d9dc3485a04.jpg;maxHeight=200;maxWidth=200?format=webp" },
         { "id": "hub", "tienda": "bestbuy", "nombre": "Hub USB-C Anker 332 (5 en 1)", "nota": "Best Buy US$ 20,99 · HDMI 4K y carga 100 W", "precio": 20.99, "on": false, "img": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/90441287-b82d-48b7-baee-1eb2fdc9e151.jpg;maxHeight=200;maxWidth=200?format=webp" },
-        { "id": "power", "tienda": "bestbuy", "nombre": "Powerbank MagSafe 5000 mAh ultrafina", "nota": "UGREEN Magflow Air US$ 44,99 · Baseus Picogo US$ 29,99", "precio": 44.99, "on": false, "img": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/57dfef4c-75a8-4d8a-916b-72fe22315800.jpg;maxHeight=200;maxWidth=200?format=webp" },
-        { "id": "running12", "desde": 3, "tienda": "adidas", "nombre": "Zapatillas de running adidas Supernova Ease 2 · talle 12", "nota": "US$ 100 · de hombre, talle 12 de EE. UU. Otras cerca de ese precio: Supernova Rise 3 hoy US$ 105 (lista US$ 140) y Zenboost hoy US$ 60 (lista US$ 100)", "precio": 100, "on": false, "link": "https://www.adidas.com/us/supernova-ease-2-m-running-shoes/JQ5859.html", "img": "https://assets.adidas.com/images/w_200,h_200,f_auto,q_auto,fl_lossy,c_fill,g_auto/06fd21a7347a4a648aa44c7d77f44d93_9366/SUPERNOVA_EASE_2_M_RUNNING_SHOES_Black_JQ5859_HM1.jpg" },
-        { "id": "samba-negra", "desde": 3, "tienda": "adidas", "nombre": "Zapatillas adidas Samba OG de mujer, negras", "nota": "adidas.com US$ 100 · de las más regaladas", "precio": 100, "on": false, "link": "https://www.adidas.com/us/samba-og-shoes/IG9031.html", "img": "https://assets.adidas.com/images/w_200,h_200,f_auto,q_auto,fl_lossy,c_fill,g_auto/cebcf6052ff3443ca0f9812cdf6b993d_9366/Samba_OG_Shoes_Black_IG9031_00_plp_standard.jpg" },
-        { "id": "spiritain", "desde": 3, "tienda": "adidas", "nombre": "Zapatillas adidas Spiritain 2000 de mujer", "nota": "Hoy US$ 72 en oferta (lista US$ 90) · crema con suela marrón, hay 4 colores", "precio": 72, "on": false, "link": "https://www.adidas.com/us/spiritain-2000-shoes/LA1818.html", "img": "https://assets.adidas.com/images/w_200,h_200,f_auto,q_auto,fl_lossy,c_fill,g_auto/4b42a546cae24f4c9fe8ff99e95af75a_9366/SPIRITAIN_2000_SHOES_White_LA1818_00_plp_standard.jpg" }
+        { "id": "power", "tienda": "bestbuy", "nombre": "Powerbank MagSafe 5000 mAh ultrafina", "nota": "UGREEN Magflow Air US$ 44,99 · Baseus Picogo US$ 29,99", "precio": 44.99, "on": false, "img": "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/57dfef4c-75a8-4d8a-916b-72fe22315800.jpg;maxHeight=200;maxWidth=200?format=webp" }
       ]
     }
   ],
