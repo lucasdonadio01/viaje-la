@@ -1,5 +1,5 @@
 window.VIAJE = {
-  "version": 4,
+  "version": 5,
   "titulo": "LA 26",
   "subtitulo": "Agenda LBT FACO · Grupo 1",
   "personas": 5,
@@ -40,7 +40,8 @@ window.VIAJE = {
     "sony": { "nombre": "Sony Pictures Studios", "direccion": "10202 W Washington Blvd, Culver City, CA 90232", "lat": 34.0198913, "lng": -118.400659, "sigla": "S", "color": "#ffffff" },
     "burbank": { "nombre": "Burbank Empire Center · Walmart y Best Buy", "direccion": "1501 N Victory Pl, Burbank, CA 91502", "lat": 34.18851, "lng": -118.32774, "sigla": "BB", "color": "#f5d76e" },
     "griffith": { "nombre": "Observatorio Griffith", "direccion": "2800 E Observatory Rd, Los Angeles, CA 90027", "lat": 34.11838, "lng": -118.30028, "sigla": "GO", "color": "#c9b6ff" },
-    "hardrock": { "nombre": "Hard Rock Cafe Hollywood", "direccion": "6801 Hollywood Blvd Suite 105, Los Angeles, CA 90028", "lat": 34.1026902, "lng": -118.3404676, "sigla": "HR", "color": "#ff9b8f" }
+    "hardrock": { "nombre": "Hard Rock Cafe Hollywood", "direccion": "6801 Hollywood Blvd Suite 105, Los Angeles, CA 90028", "lat": 34.1026902, "lng": -118.3404676, "sigla": "HR", "color": "#ff9b8f" },
+    "santamonica": { "nombre": "Muelle de Santa Monica", "direccion": "Ocean Ave y Colorado Ave (entrada del muelle), Santa Monica, CA 90401", "lat": 34.010828, "lng": -118.49564, "sigla": "SM", "color": "#9ec5ff", "nota": "El Uber deja y levanta en la entrada del muelle, sobre Ocean Ave." }
   },
   "dias": [
     {
@@ -103,7 +104,13 @@ window.VIAJE = {
     },
     { "fecha": "2026-11-01", "titulo": "Libre", "actividades": [] },
     { "fecha": "2026-11-02", "titulo": "Libre", "actividades": [] },
-    { "fecha": "2026-11-03", "titulo": "Libre", "actividades": [] },
+    {
+      "fecha": "2026-11-03", "titulo": "Walk of Fame · Santa Monica",
+      "actividades": [
+        { "id": "d311a1", "nombre": "Walk of Fame", "hora": "10:30", "finHora": "12:00", "lugar": "dolby", "aConfirmar": true, "nota": "Hora aproximada: cambiala por la hora en que llegan." },
+        { "id": "d311a2", "nombre": "Muelle y playa de Santa Monica", "duracion": 300, "lugar": "santamonica", "nota": "Atardecer ≈ 17:00. Volver antes de las 15:00 o después de las 19:30 evita la hora pico y el Uber sale más barato." }
+      ]
+    },
     { "fecha": "2026-11-04", "titulo": "Libre", "actividades": [] },
     {
       "fecha": "2026-11-05", "titulo": "Vuelta", "fin": "lax",
