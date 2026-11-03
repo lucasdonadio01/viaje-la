@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 12,
+  "version": 13,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -120,6 +120,18 @@ window.PRESUPUESTO = {
             { "id": "kindle", "monto": 221, "nota": "Kindle Paperwhite 16 GB (US$ 199,99 + impuesto)", "ts": "2026-10-30T07:19:00Z" },
             { "id": "pozo-uber-0111", "monto": 85, "nota": "Pozo de Uber que falta poner: Disney y LAX", "ts": "2026-11-01T22:38:00Z" },
             { "id": "comida-0311", "monto": 120, "nota": "Comida hasta el 5/11 (5 comidas de US$ 20 y extra de Disney)", "ts": "2026-11-03T16:20:00Z" }
+          ],
+          "id": "sin-anotar-0311",
+          "nota": "Gastos sin anotar hasta el 3/11",
+          "fecha": "2026-11-03"
+        },
+        "13": {
+          "ts": "2026-11-03T16:20:00Z",
+          "libre": 1027,
+          "apartados": [
+            { "id": "kindle", "monto": 221, "nota": "Kindle Paperwhite 16 GB (US$ 199,99 + impuesto)", "ts": "2026-10-30T07:19:00Z" },
+            { "id": "pozo-uber-0311", "monto": 22, "nota": "Pozo de Uber que falta poner: LAX", "ts": "2026-11-03T16:20:00Z" },
+            { "id": "comida-0311", "monto": 100, "nota": "Comida hasta el 5/11 (5 comidas de US$ 20)", "ts": "2026-11-03T16:20:00Z" }
           ],
           "id": "sin-anotar-0311",
           "nota": "Gastos sin anotar hasta el 3/11",
