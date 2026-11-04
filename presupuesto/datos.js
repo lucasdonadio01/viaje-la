@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 15,
+  "version": 16,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -44,7 +44,8 @@ window.PRESUPUESTO = {
         { "id": "g-0311-funko", "desde": 14, "monto": 38, "cat": "compras", "nota": "Local de Funko Pop", "ts": "2026-11-04T01:56:00Z" },
         { "id": "g-0311-hotdog", "desde": 14, "monto": 7, "cat": "comida", "nota": "Hot dog y algo más (6 o 7, a confirmar)", "ts": "2026-11-04T01:56:00Z" },
         { "id": "g-0311-sephora", "desde": 15, "monto": 25, "cat": "compras", "nota": "Sephora", "ts": "2026-11-04T02:49:00Z" },
-        { "id": "g-0311-comida", "desde": 15, "monto": 15, "cat": "comida", "nota": "Comida", "ts": "2026-11-04T02:49:00Z" }
+        { "id": "g-0311-comida", "desde": 15, "monto": 15, "cat": "comida", "nota": "Comida", "ts": "2026-11-04T02:49:00Z" },
+        { "id": "g-0311-uniqlo", "desde": 16, "monto": 244, "cat": "compras", "nota": "Uniqlo", "ts": "2026-11-04T03:21:00Z" }
       ],
       "contar": {
         "6": {
@@ -151,6 +152,19 @@ window.PRESUPUESTO = {
           ],
           "id": "sin-anotar-0311-tarde",
           "nota": "Gastos sin anotar hasta el 3/11 a la tarde",
+          "fecha": "2026-11-03"
+        },
+        "16": {
+          "ts": "2026-11-04T03:21:00Z",
+          "libre": 683,
+          "apartados": [
+            { "id": "kindle", "monto": 221, "nota": "Kindle Paperwhite 16 GB (US$ 199,99 + impuesto)", "ts": "2026-10-30T07:19:00Z" },
+            { "id": "uber-citadel-0411", "monto": 35, "nota": "Uber a Citadel ida y vuelta (4/11)", "ts": "2026-11-04T03:21:00Z" },
+            { "id": "pozo-uber-0311", "monto": 22, "nota": "Pozo de Uber que falta poner: LAX", "ts": "2026-11-03T16:20:00Z" },
+            { "id": "comida-0311", "monto": 80, "nota": "Comida hasta el 5/11 (4 comidas de US$ 20, desde la cena del 3/11)", "ts": "2026-11-03T16:20:00Z" }
+          ],
+          "id": "sin-anotar-0311-noche",
+          "nota": "Gastos sin anotar hasta el 3/11 a la noche",
           "fecha": "2026-11-03"
         }
       },
