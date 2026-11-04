@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 14,
+  "version": 15,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -42,7 +42,9 @@ window.PRESUPUESTO = {
       "gastos": [
         { "id": "g-2410-1", "desde": 4, "monto": 37, "cat": "otros", "nota": "", "ts": "2026-10-24" },
         { "id": "g-0311-funko", "desde": 14, "monto": 38, "cat": "compras", "nota": "Local de Funko Pop", "ts": "2026-11-04T01:56:00Z" },
-        { "id": "g-0311-hotdog", "desde": 14, "monto": 7, "cat": "comida", "nota": "Hot dog y algo más (6 o 7, a confirmar)", "ts": "2026-11-04T01:56:00Z" }
+        { "id": "g-0311-hotdog", "desde": 14, "monto": 7, "cat": "comida", "nota": "Hot dog y algo más (6 o 7, a confirmar)", "ts": "2026-11-04T01:56:00Z" },
+        { "id": "g-0311-sephora", "desde": 15, "monto": 25, "cat": "compras", "nota": "Sephora", "ts": "2026-11-04T02:49:00Z" },
+        { "id": "g-0311-comida", "desde": 15, "monto": 15, "cat": "comida", "nota": "Comida", "ts": "2026-11-04T02:49:00Z" }
       ],
       "contar": {
         "6": {
@@ -137,6 +139,18 @@ window.PRESUPUESTO = {
           ],
           "id": "sin-anotar-0311",
           "nota": "Gastos sin anotar hasta el 3/11",
+          "fecha": "2026-11-03"
+        },
+        "15": {
+          "ts": "2026-11-04T02:49:00Z",
+          "libre": 962,
+          "apartados": [
+            { "id": "kindle", "monto": 221, "nota": "Kindle Paperwhite 16 GB (US$ 199,99 + impuesto)", "ts": "2026-10-30T07:19:00Z" },
+            { "id": "pozo-uber-0311", "monto": 22, "nota": "Pozo de Uber que falta poner: LAX", "ts": "2026-11-03T16:20:00Z" },
+            { "id": "comida-0311", "monto": 80, "nota": "Comida hasta el 5/11 (4 comidas de US$ 20, desde la cena del 3/11)", "ts": "2026-11-03T16:20:00Z" }
+          ],
+          "id": "sin-anotar-0311-tarde",
+          "nota": "Gastos sin anotar hasta el 3/11 a la tarde",
           "fecha": "2026-11-03"
         }
       },
