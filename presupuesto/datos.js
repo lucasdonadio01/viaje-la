@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 17,
+  "version": 18,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -45,7 +45,8 @@ window.PRESUPUESTO = {
         { "id": "g-0311-hotdog", "desde": 14, "monto": 7, "cat": "comida", "nota": "Hot dog y algo más (6 o 7, a confirmar)", "ts": "2026-11-04T01:56:00Z" },
         { "id": "g-0311-sephora", "desde": 15, "monto": 25, "cat": "compras", "nota": "Sephora", "ts": "2026-11-04T02:49:00Z" },
         { "id": "g-0311-comida", "desde": 15, "monto": 15, "cat": "comida", "nota": "Comida", "ts": "2026-11-04T02:49:00Z" },
-        { "id": "g-0311-uniqlo", "desde": 16, "monto": 244, "cat": "compras", "nota": "Uniqlo", "ts": "2026-11-04T03:21:00Z" }
+        { "id": "g-0311-uniqlo", "desde": 16, "monto": 244, "cat": "compras", "nota": "Uniqlo", "ts": "2026-11-04T03:21:00Z" },
+        { "id": "g-0411-bestbuy", "desde": 18, "monto": 343, "cat": "compras", "nota": "Best Buy (con el Kindle Paperwhite)", "ts": "2026-11-04T19:32:00Z" }
       ],
       "contar": {
         "6": {
@@ -178,6 +179,18 @@ window.PRESUPUESTO = {
           ],
           "id": "sin-anotar-0411-manana",
           "nota": "Gastos sin anotar hasta el 4/11 a la mañana",
+          "fecha": "2026-11-03"
+        },
+        "18": {
+          "ts": "2026-11-04T19:32:00Z",
+          "libre": 490,
+          "apartados": [
+            { "id": "uber-citadel-0411", "monto": 35, "nota": "Uber a Citadel ida y vuelta (4/11)", "ts": "2026-11-04T03:21:00Z" },
+            { "id": "pozo-uber-0311", "monto": 22, "nota": "Pozo de Uber que falta poner: LAX", "ts": "2026-11-03T16:20:00Z" },
+            { "id": "comida-0411", "monto": 60, "nota": "Comida: almuerzo y cena del 4/11 y una el 5/11 (US$ 20 cada una)", "ts": "2026-11-04T16:42:00Z" }
+          ],
+          "id": "sin-anotar-0411-mediodia",
+          "nota": "Gastos sin anotar hasta el 4/11 al mediodía",
           "fecha": "2026-11-03"
         }
       },
