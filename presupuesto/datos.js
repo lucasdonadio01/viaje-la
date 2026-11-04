@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 16,
+  "version": 17,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -165,6 +165,19 @@ window.PRESUPUESTO = {
           ],
           "id": "sin-anotar-0311-noche",
           "nota": "Gastos sin anotar hasta el 3/11 a la noche",
+          "fecha": "2026-11-03"
+        },
+        "17": {
+          "ts": "2026-11-04T16:42:00Z",
+          "libre": 612,
+          "apartados": [
+            { "id": "kindle", "monto": 221, "nota": "Kindle Paperwhite 16 GB (US$ 199,99 + impuesto)", "ts": "2026-10-30T07:19:00Z" },
+            { "id": "uber-citadel-0411", "monto": 35, "nota": "Uber a Citadel ida y vuelta (4/11)", "ts": "2026-11-04T03:21:00Z" },
+            { "id": "pozo-uber-0311", "monto": 22, "nota": "Pozo de Uber que falta poner: LAX", "ts": "2026-11-03T16:20:00Z" },
+            { "id": "comida-0411", "monto": 60, "nota": "Comida: almuerzo y cena del 4/11 y una el 5/11 (US$ 20 cada una)", "ts": "2026-11-04T16:42:00Z" }
+          ],
+          "id": "sin-anotar-0411-manana",
+          "nota": "Gastos sin anotar hasta el 4/11 a la mañana",
           "fecha": "2026-11-03"
         }
       },
