@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 13,
+  "version": 14,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -40,7 +40,9 @@ window.PRESUPUESTO = {
       "poner": { "4": { "recibo": 4400 } },
       "quitados": { "samba": 3, "running-h": 3, "running-m": 3, "airpods": 5, "vinilo": 5, "oneblade": 5, "airpods5": 5, "watch12": 5, "lipinjection": 5, "rhode": 5, "running12": 10, "samba-negra": 10, "spiritain": 10 },
       "gastos": [
-        { "id": "g-2410-1", "desde": 4, "monto": 37, "cat": "otros", "nota": "", "ts": "2026-10-24" }
+        { "id": "g-2410-1", "desde": 4, "monto": 37, "cat": "otros", "nota": "", "ts": "2026-10-24" },
+        { "id": "g-0311-funko", "desde": 14, "monto": 38, "cat": "compras", "nota": "Local de Funko Pop", "ts": "2026-11-04T01:56:00Z" },
+        { "id": "g-0311-hotdog", "desde": 14, "monto": 7, "cat": "comida", "nota": "Hot dog y algo más (6 o 7, a confirmar)", "ts": "2026-11-04T01:56:00Z" }
       ],
       "contar": {
         "6": {
