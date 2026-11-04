@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 18,
+  "version": 19,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -46,7 +46,8 @@ window.PRESUPUESTO = {
         { "id": "g-0311-sephora", "desde": 15, "monto": 25, "cat": "compras", "nota": "Sephora", "ts": "2026-11-04T02:49:00Z" },
         { "id": "g-0311-comida", "desde": 15, "monto": 15, "cat": "comida", "nota": "Comida", "ts": "2026-11-04T02:49:00Z" },
         { "id": "g-0311-uniqlo", "desde": 16, "monto": 244, "cat": "compras", "nota": "Uniqlo", "ts": "2026-11-04T03:21:00Z" },
-        { "id": "g-0411-bestbuy", "desde": 18, "monto": 343, "cat": "compras", "nota": "Best Buy (con el Kindle Paperwhite)", "ts": "2026-11-04T19:32:00Z" }
+        { "id": "g-0411-bestbuy", "desde": 18, "monto": 343, "cat": "compras", "nota": "Best Buy (con el Kindle Paperwhite)", "ts": "2026-11-04T19:32:00Z" },
+        { "id": "g-0411-target", "desde": 19, "monto": 28, "cat": "compras", "nota": "Target: Fire TV Stick 4K (24,99 + impuesto)", "ts": "2026-11-04T20:20:00Z" }
       ],
       "contar": {
         "6": {
