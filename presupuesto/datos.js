@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 22,
+  "version": 23,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -210,6 +210,18 @@ window.PRESUPUESTO = {
           ],
           "id": "sin-anotar-0411-tarde",
           "nota": "Gastos sin anotar hasta el 4/11 a la tarde",
+          "fecha": "2026-11-04"
+        },
+        "23": {
+          "ts": "2026-11-05T05:14:00Z",
+          "libre": 33,
+          "apartados": [
+            { "id": "uber-citadel-0411", "monto": 35, "nota": "Uber a Citadel ida y vuelta (4/11)", "ts": "2026-11-04T03:21:00Z" },
+            { "id": "pozo-uber-0311", "monto": 22, "nota": "Pozo de Uber que falta poner: LAX", "ts": "2026-11-03T16:20:00Z" },
+            { "id": "comida-0411", "monto": 20, "nota": "Comida: una el 5/11 (US$ 20)", "ts": "2026-11-04T16:42:00Z" }
+          ],
+          "id": "sin-anotar-0411-noche",
+          "nota": "Gastos sin anotar hasta el 4/11 a la noche",
           "fecha": "2026-11-04"
         }
       },
