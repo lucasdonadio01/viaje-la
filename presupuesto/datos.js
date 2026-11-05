@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 19,
+  "version": 20,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -47,7 +47,10 @@ window.PRESUPUESTO = {
         { "id": "g-0311-comida", "desde": 15, "monto": 15, "cat": "comida", "nota": "Comida", "ts": "2026-11-04T02:49:00Z" },
         { "id": "g-0311-uniqlo", "desde": 16, "monto": 244, "cat": "compras", "nota": "Uniqlo", "ts": "2026-11-04T03:21:00Z" },
         { "id": "g-0411-bestbuy", "desde": 18, "monto": 343, "cat": "compras", "nota": "Best Buy (con el Kindle Paperwhite)", "ts": "2026-11-04T19:32:00Z" },
-        { "id": "g-0411-target", "desde": 19, "monto": 28, "cat": "compras", "nota": "Target: Fire TV Stick 4K (24,99 + impuesto)", "ts": "2026-11-04T20:20:00Z" }
+        { "id": "g-0411-target", "desde": 19, "monto": 28, "cat": "compras", "nota": "Target: Fire TV Stick 4K (24,99 + impuesto)", "ts": "2026-11-04T20:20:00Z" },
+        { "id": "g-0411-almuerzo", "desde": 20, "monto": 16, "cat": "comida", "nota": "Almuerzo: hamburguesa", "ts": "2026-11-05T00:30:00Z" },
+        { "id": "g-0411-carne-seca", "desde": 20, "monto": 10, "cat": "comida", "nota": "Carne seca", "ts": "2026-11-05T00:30:00Z" },
+        { "id": "g-0411-chocolates", "desde": 20, "monto": 38, "cat": "compras", "nota": "Chocolates", "ts": "2026-11-05T00:30:00Z" }
       ],
       "contar": {
         "6": {
@@ -193,6 +196,18 @@ window.PRESUPUESTO = {
           "id": "sin-anotar-0411-mediodia",
           "nota": "Gastos sin anotar hasta el 4/11 al mediodía",
           "fecha": "2026-11-03"
+        },
+        "20": {
+          "ts": "2026-11-05T00:30:00Z",
+          "libre": 418,
+          "apartados": [
+            { "id": "uber-citadel-0411", "monto": 35, "nota": "Uber a Citadel ida y vuelta (4/11)", "ts": "2026-11-04T03:21:00Z" },
+            { "id": "pozo-uber-0311", "monto": 22, "nota": "Pozo de Uber que falta poner: LAX", "ts": "2026-11-03T16:20:00Z" },
+            { "id": "comida-0411", "monto": 40, "nota": "Comida: cena del 4/11 y una el 5/11 (US$ 20 cada una)", "ts": "2026-11-04T16:42:00Z" }
+          ],
+          "id": "sin-anotar-0411-tarde",
+          "nota": "Gastos sin anotar hasta el 4/11 a la tarde",
+          "fecha": "2026-11-04"
         }
       },
       "compras": [
