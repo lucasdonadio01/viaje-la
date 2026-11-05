@@ -1,5 +1,5 @@
 window.PRESUPUESTO = {
-  "version": 20,
+  "version": 21,
   "fechas": "23/10 al 5/11",
   "impuesto": 10.25,
   "franquicia": 500,
@@ -50,7 +50,9 @@ window.PRESUPUESTO = {
         { "id": "g-0411-target", "desde": 19, "monto": 28, "cat": "compras", "nota": "Target: Fire TV Stick 4K (24,99 + impuesto)", "ts": "2026-11-04T20:20:00Z" },
         { "id": "g-0411-almuerzo", "desde": 20, "monto": 16, "cat": "comida", "nota": "Almuerzo: hamburguesa", "ts": "2026-11-05T00:30:00Z" },
         { "id": "g-0411-carne-seca", "desde": 20, "monto": 10, "cat": "comida", "nota": "Carne seca", "ts": "2026-11-05T00:30:00Z" },
-        { "id": "g-0411-chocolates", "desde": 20, "monto": 38, "cat": "compras", "nota": "Chocolates", "ts": "2026-11-05T00:30:00Z" }
+        { "id": "g-0411-chocolates", "desde": 20, "monto": 38, "cat": "compras", "nota": "Chocolates", "ts": "2026-11-05T00:30:00Z" },
+        { "id": "g-0411-columbia", "desde": 21, "monto": 155, "cat": "compras", "nota": "Columbia", "ts": "2026-11-05T03:25:00Z" },
+        { "id": "g-0411-otro-72", "desde": 21, "monto": 72, "cat": "otros", "nota": "Otro gasto (a confirmar qué fue)", "ts": "2026-11-05T03:25:00Z" }
       ],
       "contar": {
         "6": {
